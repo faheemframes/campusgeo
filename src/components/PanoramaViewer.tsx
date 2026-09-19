@@ -2,7 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { createStreetViewProvider, StreetViewProvider } from '@/lib/streetview/provider';
-import { Compass, RotateCw, ZoomIn, ZoomOut, AlertCircle } from 'lucide-react';
+import { Compass, RotateCw, ZoomIn, ZoomOut, AlertCircle, Key } from 'lucide-react';
+import ApiKeyModal from './ApiKeyModal';
 
 interface PanoramaViewerProps {
   panoId: string;
@@ -23,6 +24,7 @@ export default function PanoramaViewer({
   const providerRef = useRef<StreetViewProvider | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -118,8 +120,16 @@ export default function PanoramaViewer({
         )}
       </div>
 
-      {/* Top Right Controls: Reset Heading / Quick Help */}
+      {/* Top Right Controls: Reset Heading / Street View Key */}
       <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+        <button
+          onClick={() => setIsKeyModalOpen(true)}
+          title="Google Street View Setup"
+          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-amber-400 border border-slate-700/60 backdrop-blur-md transition active:scale-95 flex items-center gap-1.5 text-xs font-semibold px-2.5"
+        >
+          <Key className="w-4 h-4" />
+          <span className="hidden sm:inline">Street View Key</span>
+        </button>
         <button
           onClick={handleResetOrientation}
           title="Reset View Orientation"
@@ -136,6 +146,12 @@ export default function PanoramaViewer({
           <span>{loadError}</span>
         </div>
       )}
+
+      {/* API Key Modal */}
+      <ApiKeyModal
+        isOpen={isKeyModalOpen}
+        onClose={() => setIsKeyModalOpen(false)}
+      />
     </div>
   );
 }

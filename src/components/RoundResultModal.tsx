@@ -50,10 +50,10 @@ export default function RoundResultModal({
       });
 
       L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
           maxZoom: 19,
-          subdomains: 'abcd',
+          subdomains: ['a', 'b', 'c'],
         }
       ).addTo(map);
 

@@ -1,5 +1,7 @@
 export interface PanoramaOptions {
   panoId: string;
+  lat?: number;
+  lng?: number;
   initialHeading?: number;
   initialPitch?: number;
   initialZoom?: number;

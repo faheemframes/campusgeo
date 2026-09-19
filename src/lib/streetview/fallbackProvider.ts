@@ -35,11 +35,32 @@ export class Fallback360Provider implements StreetViewProvider {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
-    this.renderProceduralPanorama(this.currentPanoId);
+    this.loadPanoramaTexture(this.currentPanoId);
     this.bindEvents();
     this.startRenderLoop();
 
     options.onReady?.();
+  }
+
+  private loadPanoramaTexture(panoId: string): void {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = `/panoramas/${panoId}.jpg`;
+
+    img.onload = () => {
+      const off = document.createElement('canvas');
+      off.width = img.naturalWidth || 2048;
+      off.height = img.naturalHeight || 1024;
+      const ctx = off.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, off.width, off.height);
+        this.offscreenPanoCanvas = off;
+      }
+    };
+
+    img.onerror = () => {
+      this.renderProceduralPanorama(panoId);
+    };
   }
 
   private renderProceduralPanorama(panoId: string): void {
@@ -352,7 +373,7 @@ export class Fallback360Provider implements StreetViewProvider {
 
   async loadPanorama(panoId: string): Promise<void> {
     this.currentPanoId = panoId;
-    this.renderProceduralPanorama(panoId);
+    this.loadPanoramaTexture(panoId);
   }
 
   setPov(heading: number, pitch: number): void {

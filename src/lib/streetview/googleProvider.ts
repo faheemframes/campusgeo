@@ -63,8 +63,7 @@ export class GoogleStreetViewProvider implements StreetViewProvider {
         throw new Error('Google Maps StreetViewPanorama not available');
       }
 
-      this.panorama = new window.google.maps.StreetViewPanorama(container, {
-        pano: options.panoId,
+      const panoOpts: Record<string, unknown> = {
         addressControl: false,
         showRoadLabels: false,
         motionTracking: false,
@@ -80,7 +79,16 @@ export class GoogleStreetViewProvider implements StreetViewProvider {
           pitch: options.initialPitch ?? 0,
         },
         zoom: options.initialZoom ?? 1,
-      });
+      };
+
+      if (options.panoId) {
+        panoOpts.pano = options.panoId;
+      }
+      if (options.lat && options.lng) {
+        panoOpts.position = { lat: options.lat, lng: options.lng };
+      }
+
+      this.panorama = new window.google.maps.StreetViewPanorama(container, panoOpts);
 
       options.onReady?.();
     } catch (err: any) {

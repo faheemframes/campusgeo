@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Crosshair, MapPin, Maximize2, Minimize2, Check } from 'lucide-react';
+import { Crosshair, MapPin, Maximize2, Minimize2, Check, Layers } from 'lucide-react';
 import type * as LType from 'leaflet';
 
 interface GuessMapProps {
@@ -28,6 +28,7 @@ export default function GuessMap({
   const [guessCoord, setGuessCoord] = useState<{ lat: number; lng: number } | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [isSatellite, setIsSatellite] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -56,19 +57,30 @@ export default function GuessMap({
         attributionControl: false,
       });
 
-      // Crisp CartoDB Positron / OSM tiles for campus clarity
-      L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      // Standard OpenStreetMap tiles (free, reliable, complete SRM campus detail)
+      const streetLayer = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
           maxZoom: 19,
-          subdomains: 'abcd',
+          subdomains: ['a', 'b', 'c'],
         }
-      ).addTo(map);
+      );
+
+      const satelliteLayer = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 19,
+        }
+      );
+
+      streetLayer.addTo(map);
 
       // Top right zoom control
       L.control.zoom({ position: 'topright' }).addTo(map);
 
       mapInstanceRef.current = map;
+      (map as any)._streetLayer = streetLayer;
+      (map as any)._satelliteLayer = satelliteLayer;
 
       // Click to drop guess marker
       map.on('click', (e: LType.LeafletMouseEvent) => {
@@ -121,6 +133,20 @@ export default function GuessMap({
     return () => clearTimeout(timer);
   }, [isExpanded, isHovered]);
 
+  const handleToggleLayer = () => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current as any;
+    if (isSatellite) {
+      if (map._satelliteLayer) map.removeLayer(map._satelliteLayer);
+      if (map._streetLayer) map.addLayer(map._streetLayer);
+      setIsSatellite(false);
+    } else {
+      if (map._streetLayer) map.removeLayer(map._streetLayer);
+      if (map._satelliteLayer) map.addLayer(map._satelliteLayer);
+      setIsSatellite(true);
+    }
+  };
+
   const handleCenterCampus = () => {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.setView([SRM_CENTER_LAT, SRM_CENTER_LNG], DEFAULT_ZOOM, {
@@ -154,6 +180,17 @@ export default function GuessMap({
       </div>
 
       <div className="absolute top-2 right-12 z-[500] flex items-center gap-1">
+        <button
+          onClick={handleToggleLayer}
+          title={isSatellite ? 'Switch to Street Map' : 'Switch to Satellite'}
+          className={`p-1.5 rounded-full backdrop-blur-md border border-slate-700/60 transition ${
+            isSatellite
+              ? 'bg-amber-500 text-slate-950 font-bold'
+              : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+        </button>
         <button
           onClick={handleCenterCampus}
           title="Reset to Campus Center"
