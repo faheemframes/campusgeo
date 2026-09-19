@@ -28,16 +28,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Valid latitude and longitude are required' }, { status: 400 });
     }
 
-    // Validate bounds within SRM KTR campus and surroundings
-    if (latitude < 12.805 || latitude > 12.845 || longitude < 80.02 || longitude > 80.065) {
+    // Validate bounds covering SRM KTR campus, Abode Valley, Estancia, Potheri & GST Road surrounds
+    if (latitude < 12.790 || latitude > 12.860 || longitude < 80.010 || longitude > 80.075) {
       return NextResponse.json(
-        { error: 'Coordinates are outside the SRM KTR campus area (Lat: 12.805-12.845, Lng: 80.02-80.065)' },
+        { error: 'Coordinates are outside the SRM KTR & surrounding student area (Lat: 12.790–12.860, Lng: 80.010–80.075)' },
         { status: 400 }
       );
     }
 
-    const validAreas = ['South Campus', 'North Campus', 'Central Campus', 'Potheri / West', 'East Academic'];
-    const chosenArea = validAreas.includes(area || '') ? area! : 'Central Campus';
+    const chosenArea = (area && area.trim().length > 0) ? area.trim() : 'SRM & Surrounds';
+
 
     const safeId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const buffer = Buffer.from(await file.arrayBuffer());

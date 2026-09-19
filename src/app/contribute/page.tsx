@@ -19,7 +19,7 @@ export default function ContributePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [spotName, setSpotName] = useState('');
-  const [area, setArea] = useState('Central Campus');
+  const [area, setArea] = useState('SRM & Surrounds');
   const [difficulty, setDifficulty] = useState('medium');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsDetected, setGpsDetected] = useState<boolean>(false);
@@ -37,14 +37,14 @@ export default function ContributePage() {
       const L = await import('leaflet');
       if (!isMounted || !mapContainerRef.current) return;
 
-      const southWest = L.latLng(12.805, 80.02);
-      const northEast = L.latLng(12.845, 80.065);
+      const southWest = L.latLng(12.790, 80.010);
+      const northEast = L.latLng(12.860, 80.075);
       const bounds = L.latLngBounds(southWest, northEast);
 
       const map = L.map(mapContainerRef.current, {
         center: coords ? [coords.lat, coords.lng] : [SRM_CENTER_LAT, SRM_CENTER_LNG],
         zoom: coords ? 18.5 : 17.5,
-        minZoom: 15,
+        minZoom: 14,
         maxZoom: 19,
         maxBounds: bounds,
         attributionControl: false,
@@ -400,18 +400,14 @@ export default function ContributePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-slate-400 font-medium">Campus Zone</span>
-              <select
-                value={area}
-                onChange={(e) => setArea(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-amber-500"
-              >
-                <option value="Central Campus">Central Campus (Java Green / Walkway)</option>
-                <option value="North Campus">North Campus (Tech Park / IT Towers)</option>
-                <option value="South Campus">South Campus (TP Ganesan / Station)</option>
-                <option value="Potheri / West">Potheri / West (Railway & GST Road)</option>
-                <option value="East Academic">East Academic (Bioengineering / Old Campus)</option>
-              </select>
+              <span className="text-xs text-slate-400 font-medium">Area / Neighborhood (Optional)</span>
+              <input
+                type="text"
+                placeholder="e.g. Abode Valley, Estancia, Potheri, Tech Park..."
+                value={area === 'SRM & Surrounds' ? '' : area}
+                onChange={(e) => setArea(e.target.value.trim() || 'SRM & Surrounds')}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-amber-500"
+              />
             </div>
 
             <div className="flex flex-col gap-1.5">

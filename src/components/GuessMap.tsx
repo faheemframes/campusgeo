@@ -50,15 +50,15 @@ export default function GuessMap({
 
       if (!isMounted || !mapContainerRef.current) return;
 
-      // Define SRM KTR Campus bounds (prevents scrolling off to another state)
-      const southWest = L.latLng(12.805, 80.02);
-      const northEast = L.latLng(12.845, 80.065);
+      // Define SRM KTR & surrounding bounds (covers Abode Valley, Estancia, Potheri & GST Road)
+      const southWest = L.latLng(12.790, 80.010);
+      const northEast = L.latLng(12.860, 80.075);
       const bounds = L.latLngBounds(southWest, northEast);
 
       const map = L.map(mapContainerRef.current, {
         center: [SRM_CENTER_LAT, SRM_CENTER_LNG],
         zoom: DEFAULT_ZOOM,
-        minZoom: 15,
+        minZoom: 14,
         maxZoom: 19,
         maxBounds: bounds,
         maxBoundsViscosity: 0.8,
