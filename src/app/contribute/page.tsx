@@ -160,8 +160,39 @@ export default function ContributePage() {
     setError(null);
 
     try {
+      // Compress image client-side to keep payload lightweight and fast
+      const compressedBlob = await new Promise<Blob>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1280;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => resolve(blob || selectedFile), 'image/jpeg', 0.82);
+          } else {
+            resolve(selectedFile);
+          }
+        };
+        img.onerror = () => resolve(selectedFile);
+        img.src = URL.createObjectURL(selectedFile);
+      });
+
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append('file', compressedBlob, 'photo.jpg');
       formData.append('name', spotName.trim());
       formData.append('latitude', coords.lat.toString());
       formData.append('longitude', coords.lng.toString());

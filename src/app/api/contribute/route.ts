@@ -39,19 +39,26 @@ export async function POST(req: NextRequest) {
     const validAreas = ['South Campus', 'North Campus', 'Central Campus', 'Potheri / West', 'East Academic'];
     const chosenArea = validAreas.includes(area || '') ? area! : 'Central Campus';
 
-    // Save image to public/images/uploads/
-    const uploadsDir = path.join(process.cwd(), 'public', 'images', 'uploads');
-    await fs.mkdir(uploadsDir, { recursive: true });
-
     const safeId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const extension = file.type === 'image/png' ? 'png' : 'jpg';
-    const filename = `loc_${safeId}.${extension}`;
-    const filePath = path.join(uploadsDir, filename);
-
     const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(filePath, buffer);
+    const mimeType = file.type || 'image/jpeg';
+    let imageUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
 
-    const imageUrl = `/images/uploads/${filename}`;
+    // If running with writable local disk, also write to public/images/uploads/
+    if (!process.env.VERCEL) {
+      try {
+        const uploadsDir = path.join(process.cwd(), 'public', 'images', 'uploads');
+        await fs.mkdir(uploadsDir, { recursive: true });
+        const extension = file.type === 'image/png' ? 'png' : 'jpg';
+        const filename = `loc_${safeId}.${extension}`;
+        const filePath = path.join(uploadsDir, filename);
+        await fs.writeFile(filePath, buffer);
+        imageUrl = `/images/uploads/${filename}`;
+      } catch {
+        // Safe fallback to data URL on read-only environments
+      }
+    }
+
 
     // Create location record in database
     const location = await prisma.location.create({
