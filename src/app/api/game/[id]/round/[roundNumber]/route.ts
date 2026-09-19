@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { resolveGame } from '@/lib/gameSession';
 
 export async function GET(
   request: NextRequest,
@@ -13,29 +14,18 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid round number' }, { status: 400 });
     }
 
-    const game = await prisma.game.findUnique({
-      where: { id: gameId },
-    });
+    const game = await resolveGame(gameId);
 
     if (!game) {
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
     }
 
-    const round = await prisma.round.findUnique({
-      where: {
-        gameId_roundNumber: {
-          gameId,
-          roundNumber,
-        },
-      },
-      include: {
-        location: true,
-      },
-    });
+    const round = game.rounds.find((r) => r.roundNumber === roundNumber);
 
     if (!round) {
       return NextResponse.json({ error: 'Round not found' }, { status: 404 });
     }
+
 
     // Anti-cheat: NEVER reveal coordinates or location name before guess
     return NextResponse.json({

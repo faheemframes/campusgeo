@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { calculateHaversineDistance, calculateScore } from '@/lib/scoring';
+import { resolveGame } from '@/lib/gameSession';
 
 export async function POST(
   request: NextRequest,
@@ -9,7 +10,7 @@ export async function POST(
   try {
     const { id: gameId } = await params;
     const body = await request.json();
-    const { roundNumber, guessLatitude, guessLongitude } = body;
+    const { roundNumber, guessLatitude, guessLongitude, currentTotalScore } = body;
 
     if (
       typeof roundNumber !== 'number' ||
@@ -22,24 +23,17 @@ export async function POST(
       );
     }
 
-    const game = await prisma.game.findUnique({
-      where: { id: gameId },
-      include: {
-        rounds: {
-          include: { location: true },
-          orderBy: { roundNumber: 'asc' },
-        },
-      },
-    });
+    const game = await resolveGame(gameId);
 
     if (!game) {
-      return NextResponse.json({ error: 'Game not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Game session not found' }, { status: 404 });
     }
 
     const round = game.rounds.find((r) => r.roundNumber === roundNumber);
     if (!round) {
       return NextResponse.json({ error: 'Round not found in game session' }, { status: 404 });
     }
+
 
     // Calculate server-side distance and score
     const distanceMeters = calculateHaversineDistance(
@@ -63,13 +57,18 @@ export async function POST(
     });
 
     // Recompute total game score
+    // Recompute total game score
     const updatedRounds = await prisma.round.findMany({
       where: { gameId },
     });
 
-    const totalGameScore = updatedRounds.reduce((acc, r) => acc + (r.score ?? 0), 0);
+    let totalGameScore = updatedRounds.reduce((acc, r) => acc + (r.score ?? 0), 0);
+    if (typeof currentTotalScore === 'number' && currentTotalScore + score > totalGameScore) {
+      totalGameScore = currentTotalScore + score;
+    }
+
     const completedRoundsCount = updatedRounds.filter((r) => r.score !== null).length;
-    const isGameOver = completedRoundsCount >= 5;
+    const isGameOver = completedRoundsCount >= 5 || roundNumber >= 5;
 
     await prisma.game.update({
       where: { id: gameId },
@@ -77,7 +76,7 @@ export async function POST(
         totalScore: totalGameScore,
         isFinished: isGameOver,
       },
-    });
+    }).catch(() => {});
 
     // Return reveal payload
     return NextResponse.json({
@@ -94,6 +93,7 @@ export async function POST(
     });
   } catch (error: any) {
     console.error('Error recording guess:', error);
-    return NextResponse.json({ error: 'Failed to evaluate guess.' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to evaluate guess.' }, { status: 500 });
   }
 }
+

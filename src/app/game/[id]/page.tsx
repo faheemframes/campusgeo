@@ -99,11 +99,13 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
           roundNumber: currentRoundNumber,
           guessLatitude: guessLat,
           guessLongitude: guessLng,
+          currentTotalScore: totalScore,
         }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to submit guess');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to submit guess');
       }
 
       const data = await res.json();

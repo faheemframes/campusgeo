@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { encodeGameId } from '@/lib/gameSession';
 
 export async function POST() {
   try {
@@ -61,9 +62,12 @@ export async function POST() {
       selectedLocations.push(picked);
     }
 
+    const gameId = encodeGameId(selectedLocations.map((loc) => loc.id));
+
     // 3. Create Game session
     const game = await prisma.game.create({
       data: {
+        id: gameId,
         totalScore: 0,
         isFinished: false,
         rounds: {
@@ -73,6 +77,7 @@ export async function POST() {
           })),
         },
       },
+
       include: {
         rounds: {
           include: {
