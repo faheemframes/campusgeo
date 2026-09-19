@@ -6,18 +6,12 @@ function createPrismaClient(): PrismaClient {
   if (process.env.VERCEL) {
     const tmpDb = '/tmp/dev.db';
     if (!fs.existsSync(tmpDb)) {
-      const candidates = [
-        path.join(process.cwd(), 'prisma', 'dev.db'),
-        path.join(process.cwd(), 'dev.db'),
-      ];
-      for (const p of candidates) {
-        if (fs.existsSync(p)) {
-          try {
-            fs.copyFileSync(p, tmpDb);
-            break;
-          } catch (e) {
-            console.error('Error copying db to /tmp on Vercel:', e);
-          }
+      const projectDb = path.join(process.cwd(), 'prisma', 'dev.db');
+      if (fs.existsSync(projectDb)) {
+        try {
+          fs.copyFileSync(projectDb, tmpDb);
+        } catch (e) {
+          console.error('Error copying db to /tmp on Vercel:', e);
         }
       }
     }
