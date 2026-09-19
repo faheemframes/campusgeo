@@ -57,6 +57,17 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Reset full game state whenever gameId changes (e.g. Play Again or navigating to new game)
+  useEffect(() => {
+    setCurrentRoundNumber(1);
+    setRoundInfo(null);
+    setActiveResult(null);
+    setCompletedRounds([]);
+    setIsGameOver(false);
+    setTotalScore(0);
+    setError(null);
+  }, [gameId]);
+
   // Fetch round info
   const fetchRound = async (roundNum: number) => {
     setIsLoadingRound(true);
@@ -138,6 +149,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
   const handleNextRound = () => {
     setActiveResult(null);
+    setRoundInfo(null); // Clear previous round's photo immediately so it never shows on next round
     if (isGameOver) {
       // Final result screen will render automatically
     } else {
@@ -187,6 +199,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
       <div className="fixed top-3 left-1/2 -translate-x-1/2 z-40 sm:hidden flex items-center bg-slate-900/95 border border-slate-700/80 rounded-full p-1 shadow-2xl backdrop-blur-md">
         <button
           onClick={() => setMobileMode('photo')}
+          aria-label="Photo View Only"
           className={`px-3 py-1 rounded-full text-xs font-bold transition ${
             mobileMode === 'photo'
               ? 'bg-amber-500 text-slate-950 shadow-md'
@@ -197,6 +210,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
         </button>
         <button
           onClick={() => setMobileMode('split')}
+          aria-label="Split Photo and Map View"
           className={`px-3 py-1 rounded-full text-xs font-bold transition ${
             mobileMode === 'split'
               ? 'bg-amber-500 text-slate-950 shadow-md'
@@ -207,6 +221,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
         </button>
         <button
           onClick={() => setMobileMode('map')}
+          aria-label="Map View Only"
           className={`px-3 py-1 rounded-full text-xs font-bold transition ${
             mobileMode === 'map'
               ? 'bg-amber-500 text-slate-950 shadow-md'
@@ -227,9 +242,9 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
             : 'hidden sm:block sm:h-full sm:w-full sm:absolute sm:inset-0'
         }`}
       >
-        {roundInfo && (
+        {roundInfo ? (
           <PanoramaViewer
-            key={`pano-${roundInfo.panoId}`}
+            key={`round-${currentRoundNumber}-${roundInfo.panoId}-${roundInfo.imageUrl}`}
             panoId={roundInfo.panoId}
             imageUrl={roundInfo.imageUrl}
             areaHint={roundInfo.area}
@@ -237,6 +252,11 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
             roundNumber={currentRoundNumber}
             totalRounds={totalRounds}
           />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950">
+            <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-3" />
+            <span className="text-xs uppercase font-bold tracking-widest text-slate-400">Loading Round {currentRoundNumber}...</span>
+          </div>
         )}
       </div>
 

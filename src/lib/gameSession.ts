@@ -54,8 +54,11 @@ export async function resolveGame(gameId: string) {
     where: { id: { in: targetLocIds } },
   });
 
+  // Preserve exact decoded order of targetLocIds
+  const locMap = new Map(existingLocations.map((l) => [l.id, l]));
+  let finalLocations = targetLocIds.map((id) => locMap.get(id)).filter(Boolean) as typeof existingLocations;
+
   // If some are missing (rare), fill with active locations
-  let finalLocations = existingLocations;
   if (finalLocations.length < 5) {
     const extraLocs = await prisma.location.findMany({
       where: { active: true, id: { notIn: finalLocations.map((l) => l.id) } },

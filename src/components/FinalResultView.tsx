@@ -132,7 +132,8 @@ export default function FinalResultView({
         <div className="w-full shrink-0 flex flex-col gap-2 pt-1 sm:pt-2">
           <button
             onClick={() => setIsShareModalOpen(true)}
-            className="w-full py-2.5 sm:py-3.5 rounded-xl font-black text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 shadow-md shadow-amber-500/20 hover:brightness-110 active:scale-[0.98] transition flex items-center justify-center gap-2"
+            aria-label="Share result card to social media"
+            className="w-full py-2.5 sm:py-3.5 rounded-xl font-black text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 shadow-md shadow-amber-500/20 hover:brightness-110 active:scale-[0.98] transition flex items-center justify-center gap-2 min-h-[44px]"
           >
             <Share2 className="w-4 h-4" />
             <span>SHARE RESULT CARD</span>
@@ -141,7 +142,8 @@ export default function FinalResultView({
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={onPlayAgain}
-              className="w-full py-2 sm:py-2.5 rounded-xl font-bold text-xs tracking-wider uppercase bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition flex items-center justify-center gap-1.5 active:scale-95"
+              aria-label="Play another game of Campus Geo"
+              className="w-full py-2.5 rounded-xl font-bold text-xs tracking-wider uppercase bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition flex items-center justify-center gap-1.5 active:scale-95 min-h-[40px]"
             >
               <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
               <span>PLAY AGAIN</span>
@@ -149,7 +151,8 @@ export default function FinalResultView({
 
             <button
               onClick={() => router.push('/contribute')}
-              className="w-full py-2 sm:py-2.5 rounded-xl font-bold text-xs tracking-wider uppercase bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08] hover:text-amber-300 transition flex items-center justify-center gap-1.5 active:scale-95"
+              aria-label="Contribute a new campus spot"
+              className="w-full py-2.5 rounded-xl font-bold text-xs tracking-wider uppercase bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08] hover:text-amber-300 transition flex items-center justify-center gap-1.5 active:scale-95 min-h-[40px]"
             >
               <Camera className="w-3.5 h-3.5 text-amber-400" />
               <span>+ ADD SPOT</span>

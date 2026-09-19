@@ -128,7 +128,12 @@ export default function RoundResultModal({
   }, [actualLatitude, actualLongitude, guessLatitude, guessLongitude]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Round ${roundNumber} of ${totalRounds} Result`}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-xl bg-slate-900 border border-white/[0.08] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[96dvh] sm:max-h-[90vh]">
         {/* Modal Header */}
         <div className="px-4 py-2.5 sm:px-6 sm:py-3.5 bg-slate-900/95 border-b border-white/[0.06] flex items-center justify-between shrink-0">
@@ -195,7 +200,7 @@ export default function RoundResultModal({
               {imageUrl ? (
                 <img
                   src={imageUrl}
-                  alt={locationName}
+                  alt={`Target spot: ${locationName}`}
                   className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg object-cover border border-slate-700 shadow-md flex-shrink-0"
                 />
               ) : (
@@ -216,7 +221,8 @@ export default function RoundResultModal({
           {/* Action CTA */}
           <button
             onClick={onNext}
-            className="w-full py-2.5 sm:py-3.5 rounded-xl font-black text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 shadow-md shadow-amber-500/20 hover:brightness-110 active:scale-[0.99] transition flex items-center justify-center gap-2 shrink-0"
+            aria-label={isGameOver ? 'See final game score' : 'Proceed to next round'}
+            className="w-full py-2.5 sm:py-3.5 rounded-xl font-black text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 shadow-md shadow-amber-500/20 hover:brightness-110 active:scale-[0.99] transition flex items-center justify-center gap-2 shrink-0 min-h-[44px]"
           >
             <span>{isGameOver ? 'SEE FINAL SCORE' : 'NEXT ROUND'}</span>
             <ArrowRight className="w-4 h-4" />

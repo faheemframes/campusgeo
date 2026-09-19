@@ -298,25 +298,29 @@ export default function ContributePage() {
         )}
 
         {/* Step 1: Photo Upload */}
+        {/* Step 1: Photo Upload */}
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <label htmlFor="landmark-photo-upload" className="text-xs font-bold uppercase tracking-wider text-slate-400">
             1. Photo of Landmark
           </label>
           <input
             ref={fileInputRef}
+            id="landmark-photo-upload"
             type="file"
             accept="image/*"
             capture="environment"
+            aria-label="Upload photo of campus landmark"
             onChange={handleFileChange}
             className="hidden"
           />
 
           {previewUrl ? (
             <div className="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 group">
-              <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+              <img src={previewUrl} alt="Preview of uploaded campus spot" className="w-full h-full object-cover" />
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
+                aria-label="Change uploaded landmark photo"
                 className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition"
               >
                 Tap to Change Photo
@@ -325,6 +329,15 @@ export default function ContributePage() {
           ) : (
             <div
               onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+              aria-label="Snap or upload campus photo"
               className="w-full h-40 border-2 border-dashed border-slate-700 hover:border-amber-500/80 rounded-2xl flex flex-col items-center justify-center p-4 cursor-pointer bg-slate-950/50 hover:bg-slate-950/80 transition text-center"
             >
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-2 text-amber-400">
@@ -333,7 +346,7 @@ export default function ContributePage() {
               <p className="text-xs sm:text-sm font-bold text-slate-200">
                 Snap or Upload Campus Photo
               </p>
-              <p className="text-[11px] text-slate-500 mt-0.5">
+              <p className="text-[11px] text-slate-400 mt-0.5">
                 Auto-reads phone camera GPS if available
               </p>
             </div>
@@ -361,9 +374,9 @@ export default function ContributePage() {
         {/* Step 2: Interactive Pin Map */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               2. Pin Location on Satellite
-            </label>
+            </span>
             {coords && (
               <span className="text-[11px] font-mono text-emerald-400">
                 {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
@@ -382,42 +395,49 @@ export default function ContributePage() {
 
         {/* Step 3: Spot Information */}
         <div className="flex flex-col gap-4">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
             3. Spot Details
-          </label>
+          </span>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs text-slate-400 font-medium">Landmark / Spot Name</span>
+            <label htmlFor="spot-name" className="text-xs text-slate-300 font-medium">
+              Landmark / Spot Name
+            </label>
             <input
+              id="spot-name"
               type="text"
               required
               placeholder="e.g. Mechanical Lab Portico, Tech Park 4th Floor"
               value={spotName}
               onChange={(e) => setSpotName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-amber-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-amber-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-slate-400 font-medium">Area / Neighborhood (Optional)</span>
+              <label htmlFor="spot-area" className="text-xs text-slate-300 font-medium">
+                Area / Neighborhood (Optional)
+              </label>
               <input
+                id="spot-area"
                 type="text"
                 placeholder="e.g. Abode Valley, Estancia, Potheri, Tech Park..."
                 value={area === 'SRM & Surrounds' ? '' : area}
                 onChange={(e) => setArea(e.target.value.trim() || 'SRM & Surrounds')}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-amber-500"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-slate-400 font-medium">Difficulty Level</span>
+              <span className="text-xs text-slate-300 font-medium">Difficulty Level</span>
               <div className="grid grid-cols-3 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-700">
                 {(['easy', 'medium', 'hard'] as const).map((d) => (
                   <button
                     key={d}
                     type="button"
                     onClick={() => setDifficulty(d)}
+                    aria-label={`Select difficulty: ${d}`}
                     className={`py-1.5 rounded-lg text-xs font-bold capitalize transition ${
                       difficulty === d
                         ? d === 'hard'

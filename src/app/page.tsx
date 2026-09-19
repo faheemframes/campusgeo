@@ -87,7 +87,8 @@ export default function LandingPage() {
         <button
           onClick={handleStartGame}
           disabled={isStarting}
-          className="mt-6 w-full py-3.5 sm:py-4 px-6 rounded-2xl font-black text-base sm:text-lg tracking-wider uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 group"
+          aria-label={isStarting ? 'Starting game...' : 'Play 360 Campus Geo Game'}
+          className="mt-6 w-full py-3.5 sm:py-4 px-6 rounded-2xl font-black text-base sm:text-lg tracking-wider uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 group min-h-[48px]"
         >
           {isStarting ? (
             <div className="flex items-center gap-2">
@@ -105,24 +106,25 @@ export default function LandingPage() {
         {/* Secondary Action: Add a Campus Spot */}
         <button
           onClick={() => router.push('/contribute')}
-          className="mt-2.5 w-full py-2.5 px-4 rounded-xl font-bold text-xs tracking-wide bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.15] text-slate-300 hover:text-white transition flex items-center justify-center gap-2 active:scale-95"
+          aria-label="Contribute a new campus spot to the game pool"
+          className="mt-2.5 w-full py-2.5 px-4 rounded-xl font-bold text-xs tracking-wide bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.15] text-slate-300 hover:text-white transition flex items-center justify-center gap-2 active:scale-95 min-h-[44px]"
         >
           <Camera className="w-4 h-4 text-amber-400" />
           <span>Contribute a Campus Spot</span>
         </button>
 
         {/* Secondary information */}
-        <p className="mt-4 text-xs sm:text-sm font-medium tracking-wide text-slate-400">
+        <p className="mt-4 text-xs sm:text-sm font-medium tracking-wide text-slate-300">
           Explore. Guess. Lock it in.
         </p>
       </div>
 
       {/* Footer Details */}
       <footer className="w-full max-w-md pb-2 flex flex-col items-center text-center gap-1 z-10 shrink-0">
-        <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
+        <div className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
           5 quick rounds • 360° Panoramas • Shareable card
         </div>
-        <div className="text-[9px] sm:text-[10px] text-slate-600">
+        <div className="text-[9px] sm:text-[10px] text-slate-400">
           Built for SRM Institute of Science and Technology, Kattankulathur
         </div>
       </footer>

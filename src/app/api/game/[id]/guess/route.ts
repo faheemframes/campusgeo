@@ -87,6 +87,7 @@ export async function POST(
       actualLongitude: round.location.longitude,
       locationName: round.location.name,
       locationArea: round.location.area,
+      imageUrl: round.location.imageUrl,
       totalGameScore,
       isGameOver,
       hasNextRound: roundNumber < 5,

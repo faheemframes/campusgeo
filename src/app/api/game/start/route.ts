@@ -16,53 +16,50 @@ export async function POST() {
       );
     }
 
-    // 2. Select 5 geographically distant locations with escalating difficulty
-    // Zones: South Campus, North Campus, Potheri / West, Central Campus, East Academic
-    const zones = ['South Campus', 'North Campus', 'Potheri / West', 'Central Campus', 'East Academic']
-      .sort(() => 0.5 - Math.random());
+    // 2. Select 5 diverse, non-repeating landmarks across campus
+    // Helper to get landmark cluster key so we never pick two angles of the same building in one game
+    const getLandmarkCluster = (id: string, name: string) => {
+      const lower = (id + ' ' + name).toLowerCase();
+      if (lower.includes('auditorium')) return 'auditorium';
+      if (lower.includes('tech_park') || lower.includes('tech park')) return 'tech_park';
+      if (lower.includes('potheri')) return 'potheri';
+      if (lower.includes('java') || lower.includes('clock_tower')) return 'java';
+      if (lower.includes('bio')) return 'bioengineering';
+      if (lower.includes('academic')) return 'academic_block';
+      if (lower.includes('kattankulathur') || lower.includes('station')) return 'station';
+      if (lower.includes('hostel') || lower.includes('paari') || lower.includes('oori')) return 'hostel';
+      return id;
+    };
 
+    const shuffled = [...allLocations].sort(() => Math.random() - 0.5);
     const selectedLocations: typeof allLocations = [];
-    const chosenIds = new Set<string>();
+    const chosenClusters = new Set<string>();
+    const chosenImages = new Set<string>();
 
-    const targetDifficulties = ['easy', 'easy', 'medium', 'medium', 'hard'];
+    for (const loc of shuffled) {
+      if (selectedLocations.length >= 5) break;
+      const cluster = getLandmarkCluster(loc.id, loc.name);
+      const img = loc.imageUrl || loc.panoId;
 
-    for (let i = 0; i < 5; i++) {
-      const targetZone = zones[i % zones.length];
-      const targetDiff = targetDifficulties[i];
-
-      // Prefer candidates matching the target zone and difficulty
-      let pool = allLocations.filter(
-        (l) => !chosenIds.has(l.id) && l.area === targetZone && l.difficulty === targetDiff
-      );
-
-      // Fallback 1: Any unused location in target zone
-      if (pool.length === 0) {
-        pool = allLocations.filter((l) => !chosenIds.has(l.id) && l.area === targetZone);
+      if (!chosenClusters.has(cluster) && !chosenImages.has(img)) {
+        chosenClusters.add(cluster);
+        chosenImages.add(img);
+        selectedLocations.push(loc);
       }
+    }
 
-      // Fallback 2: Any unused location in target difficulty that is far from previous picks
-      if (pool.length === 0) {
-        pool = allLocations.filter((l) => !chosenIds.has(l.id));
+    // Fallback: fill up to 5 if needed
+    if (selectedLocations.length < 5) {
+      for (const loc of shuffled) {
+        if (selectedLocations.length >= 5) break;
+        if (!selectedLocations.some((s) => s.id === loc.id)) {
+          selectedLocations.push(loc);
+        }
       }
-
-      // Sort candidate by distance from previous picked location (maximize distance)
-      if (selectedLocations.length > 0) {
-        const lastLoc = selectedLocations[selectedLocations.length - 1];
-        pool.sort((a, b) => {
-          const distA = Math.hypot(a.latitude - lastLoc.latitude, a.longitude - lastLoc.longitude);
-          const distB = Math.hypot(b.latitude - lastLoc.latitude, b.longitude - lastLoc.longitude);
-          return distB - distA; // Furthest first
-        });
-      } else {
-        pool.sort(() => 0.5 - Math.random());
-      }
-
-      const picked = pool[0];
-      chosenIds.add(picked.id);
-      selectedLocations.push(picked);
     }
 
     const gameId = encodeGameId(selectedLocations.map((loc) => loc.id));
+
 
     // 3. Create Game session
     const game = await prisma.game.create({

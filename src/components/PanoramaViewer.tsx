@@ -81,7 +81,7 @@ export default function PanoramaViewer({
         providerRef.current = null;
       }
     };
-  }, [panoId, onLoaded]);
+  }, [panoId, imageUrl, roundNumber, onLoaded]);
 
   const handleResetOrientation = () => {
     if (providerRef.current) {
@@ -156,21 +156,24 @@ export default function PanoramaViewer({
         <button
           onClick={handleZoomIn}
           title="Zoom In"
-          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 backdrop-blur-md transition active:scale-95"
+          aria-label="Zoom In"
+          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 backdrop-blur-md transition active:scale-95 min-w-[36px] min-h-[36px] flex items-center justify-center"
         >
           <ZoomIn className="w-4 h-4" />
         </button>
         <button
           onClick={handleZoomOut}
           title="Zoom Out"
-          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 backdrop-blur-md transition active:scale-95"
+          aria-label="Zoom Out"
+          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 backdrop-blur-md transition active:scale-95 min-w-[36px] min-h-[36px] flex items-center justify-center"
         >
           <ZoomOut className="w-4 h-4" />
         </button>
         <button
           onClick={handleResetOrientation}
           title="Reset View Orientation"
-          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 backdrop-blur-md transition active:scale-95"
+          aria-label="Reset View Orientation"
+          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 backdrop-blur-md transition active:scale-95 min-w-[36px] min-h-[36px] flex items-center justify-center"
         >
           <RotateCw className="w-4 h-4" />
         </button>
