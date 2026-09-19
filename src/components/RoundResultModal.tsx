@@ -52,41 +52,44 @@ export default function RoundResultModal({
       });
 
       L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         {
           maxZoom: 19,
-          subdomains: ['a', 'b', 'c'],
         }
       ).addTo(map);
 
-      // Guess Pin (Red)
+      // Guess Pin (Red, precise tip)
       const guessIcon = L.divIcon({
         className: 'result-guess-pin',
         html: `
-          <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-full">
-            <div class="w-8 h-8 rounded-full bg-red-500 border-2 border-white shadow-xl flex items-center justify-center">
-              <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
-            </div>
-            <div class="absolute -bottom-1 w-2 h-2 bg-red-600 rotate-45"></div>
+          <div style="width: 32px; height: 42px; position: relative; pointer-events: none; margin: 0; padding: 0;">
+            <svg width="32" height="42" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.7));">
+              <path d="M16 1C7.716 1 1 7.716 1 16C1 27.5 16 41 16 41C16 41 31 27.5 31 16C31 7.716 24.284 1 16 1Z" fill="#EF4444" stroke="#FFFFFF" stroke-width="2"/>
+              <circle cx="16" cy="16" r="5.5" fill="#FFFFFF"/>
+              <circle cx="16" cy="16" r="2.5" fill="#EF4444"/>
+            </svg>
+            <div style="position: absolute; bottom: 0; left: 16px; transform: translate(-50%, 50%); width: 5px; height: 5px; border-radius: 50%; background: #EF4444; border: 1px solid #FFFFFF;"></div>
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
+        iconSize: [32, 42],
+        iconAnchor: [16, 41],
       });
 
-      // Actual Pin (Emerald Green)
+      // Actual Pin (Emerald Green, precise tip)
       const actualIcon = L.divIcon({
         className: 'result-actual-pin',
         html: `
-          <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-full">
-            <div class="w-8 h-8 rounded-full bg-emerald-500 border-2 border-white shadow-xl flex items-center justify-center animate-pulse">
-              <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
-            </div>
-            <div class="absolute -bottom-1 w-2 h-2 bg-emerald-600 rotate-45"></div>
+          <div style="width: 32px; height: 42px; position: relative; pointer-events: none; margin: 0; padding: 0;">
+            <svg width="32" height="42" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.7));">
+              <path d="M16 1C7.716 1 1 7.716 1 16C1 27.5 16 41 16 41C16 41 31 27.5 31 16C31 7.716 24.284 1 16 1Z" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+              <circle cx="16" cy="16" r="5.5" fill="#FFFFFF"/>
+              <circle cx="16" cy="16" r="2.5" fill="#10B981"/>
+            </svg>
+            <div style="position: absolute; bottom: 0; left: 16px; transform: translate(-50%, 50%); width: 5px; height: 5px; border-radius: 50%; background: #10B981; border: 1px solid #FFFFFF;"></div>
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
+        iconSize: [32, 42],
+        iconAnchor: [16, 41],
       });
 
       const guessMarker = L.marker([guessLatitude, guessLongitude], { icon: guessIcon }).addTo(map);

@@ -2,8 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { createStreetViewProvider, StreetViewProvider } from '@/lib/streetview/provider';
-import { Compass, RotateCw, ZoomIn, ZoomOut, AlertCircle, Key } from 'lucide-react';
-import ApiKeyModal from './ApiKeyModal';
+import { Compass, RotateCw, ZoomIn, ZoomOut, AlertCircle } from 'lucide-react';
 
 interface PanoramaViewerProps {
   panoId: string;
@@ -26,7 +25,6 @@ export default function PanoramaViewer({
   const providerRef = useRef<StreetViewProvider | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -84,7 +82,20 @@ export default function PanoramaViewer({
 
   const handleResetOrientation = () => {
     if (providerRef.current) {
+      providerRef.current.reset?.();
       providerRef.current.setPov(0, 0);
+    }
+  };
+
+  const handleZoomIn = () => {
+    if (providerRef.current) {
+      providerRef.current.zoomIn?.();
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (providerRef.current) {
+      providerRef.current.zoomOut?.();
     }
   };
 
@@ -98,7 +109,7 @@ export default function PanoramaViewer({
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm">
           <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-white font-semibold tracking-wider text-sm">
-            LOADING 360° PANORAMA...
+            LOADING CAMPUS VIEW...
           </p>
           <p className="text-slate-400 text-xs mt-1">Round {roundNumber} of {totalRounds}</p>
         </div>
@@ -123,20 +134,26 @@ export default function PanoramaViewer({
         )}
       </div>
 
-      {/* Top Right Controls: Reset Heading / Street View Key */}
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+      {/* Top Right Controls: Zoom In / Zoom Out / Reset View */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5">
         <button
-          onClick={() => setIsKeyModalOpen(true)}
-          title="Google Street View Setup"
-          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-amber-400 border border-slate-700/60 backdrop-blur-md transition active:scale-95 flex items-center gap-1.5 text-xs font-semibold px-2.5"
+          onClick={handleZoomIn}
+          title="Zoom In"
+          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 backdrop-blur-md transition active:scale-95"
         >
-          <Key className="w-4 h-4" />
-          <span className="hidden sm:inline">Street View Key</span>
+          <ZoomIn className="w-4 h-4" />
+        </button>
+        <button
+          onClick={handleZoomOut}
+          title="Zoom Out"
+          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 backdrop-blur-md transition active:scale-95"
+        >
+          <ZoomOut className="w-4 h-4" />
         </button>
         <button
           onClick={handleResetOrientation}
           title="Reset View Orientation"
-          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/60 backdrop-blur-md transition active:scale-95"
+          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 backdrop-blur-md transition active:scale-95"
         >
           <RotateCw className="w-4 h-4" />
         </button>
@@ -149,12 +166,6 @@ export default function PanoramaViewer({
           <span>{loadError}</span>
         </div>
       )}
-
-      {/* API Key Modal */}
-      <ApiKeyModal
-        isOpen={isKeyModalOpen}
-        onClose={() => setIsKeyModalOpen(false)}
-      />
     </div>
   );
 }

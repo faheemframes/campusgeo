@@ -17,13 +17,13 @@ assert(dist > 130 && dist < 160, `Distance should be ~144m, got ${dist}m`);
 console.log('\n--- Testing Scoring Calibration ---');
 const tests = [
   { dist: 0, minScore: 5000, maxScore: 5000, label: '0m Bullseye' },
-  { dist: 25, minScore: 4000, maxScore: 4200, label: '25m Near Bullseye' },
-  { dist: 50, minScore: 3200, maxScore: 3400, label: '50m Excellent' },
-  { dist: 100, minScore: 2100, maxScore: 2300, label: '100m Decent' },
-  { dist: 200, minScore: 900, maxScore: 1000, label: '200m Off Target' },
-  { dist: 350, minScore: 200, maxScore: 350, label: '350m Poor' },
-  { dist: 500, minScore: 50, maxScore: 100, label: '500m Very Poor' },
-  { dist: 1000, minScore: 0, maxScore: 5, label: '1km Miss' },
+  { dist: 25, minScore: 3500, maxScore: 3700, label: '25m Near Bullseye' },
+  { dist: 50, minScore: 2500, maxScore: 2700, label: '50m Good' },
+  { dist: 100, minScore: 1250, maxScore: 1400, label: '100m Decent' },
+  { dist: 200, minScore: 300, maxScore: 400, label: '200m Off Target' },
+  { dist: 350, minScore: 30, maxScore: 70, label: '350m Poor' },
+  { dist: 500, minScore: 1, maxScore: 15, label: '500m Very Poor' },
+  { dist: 1000, minScore: 0, maxScore: 2, label: '1km Miss' },
 ];
 
 for (const t of tests) {

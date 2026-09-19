@@ -15,5 +15,8 @@ export interface StreetViewProvider {
   init(container: HTMLElement, options: PanoramaOptions): Promise<void>;
   loadPanorama(panoId: string): Promise<void>;
   setPov(heading: number, pitch: number): void;
+  zoomIn?(): void;
+  zoomOut?(): void;
+  reset?(): void;
   destroy(): void;
 }

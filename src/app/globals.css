@@ -21,8 +21,10 @@ body {
 }
 
 .custom-guess-pin, .result-guess-pin, .result-actual-pin {
-  background: transparent;
-  border: none;
+  background: transparent !important;
+  border: none !important;
+  line-height: 0 !important;
+  padding: 0 !important;
 }
 
 /* Hide default leaflet attribution flag prefix for clean mobile screen */

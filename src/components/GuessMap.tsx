@@ -14,7 +14,7 @@ interface GuessMapProps {
 // SRM KTR Campus Coordinates
 const SRM_CENTER_LAT = 12.8236;
 const SRM_CENTER_LNG = 80.0445;
-const DEFAULT_ZOOM = 16;
+const DEFAULT_ZOOM = 18; // Very zoomed in so campus buildings, roads & roofs are instantly clear
 
 export default function GuessMap({
   roundNumber = 1,
@@ -34,8 +34,7 @@ export default function GuessMap({
 
   const [guessCoord, setGuessCoord] = useState<{ lat: number; lng: number } | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [isHovered, setIsHovered] = useState<boolean>(false);
-  const [isSatellite, setIsSatellite] = useState<boolean>(false);
+  const [isSatellite, setIsSatellite] = useState<boolean>(true); // Default to Satellite!
 
   // Initialize Map once on mount
   useEffect(() => {
@@ -57,7 +56,7 @@ export default function GuessMap({
       const map = L.map(mapContainerRef.current, {
         center: [SRM_CENTER_LAT, SRM_CENTER_LNG],
         zoom: DEFAULT_ZOOM,
-        minZoom: 14,
+        minZoom: 15,
         maxZoom: 19,
         maxBounds: bounds,
         maxBoundsViscosity: 0.8,
@@ -65,7 +64,7 @@ export default function GuessMap({
         attributionControl: false,
       });
 
-      // Standard OpenStreetMap tiles (free, reliable, complete SRM campus detail)
+      // Standard OpenStreetMap tiles
       const streetLayer = L.tileLayer(
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
@@ -74,6 +73,7 @@ export default function GuessMap({
         }
       );
 
+      // High-resolution Satellite Imagery
       const satelliteLayer = L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         {
@@ -81,7 +81,8 @@ export default function GuessMap({
         }
       );
 
-      streetLayer.addTo(map);
+      // Default to Satellite View
+      satelliteLayer.addTo(map);
 
       // Top right zoom control
       L.control.zoom({ position: 'topright' }).addTo(map);
@@ -90,11 +91,14 @@ export default function GuessMap({
       (map as any)._streetLayer = streetLayer;
       (map as any)._satelliteLayer = satelliteLayer;
 
-      // Click to drop guess marker directly
+      // Click to drop or move guess marker directly
       map.on('click', (e: LType.LeafletMouseEvent) => {
         if (disabledRef.current || isSubmittingRef.current) return;
         placePin(e.latlng.lat, e.latlng.lng, map, L);
       });
+
+      // Trigger size calculation once mounted
+      setTimeout(() => map.invalidateSize(), 200);
     }
 
     initMap();
@@ -108,7 +112,7 @@ export default function GuessMap({
     };
   }, []);
 
-  // Helper to place or move the marker
+  // Helper to place or move the marker with 100% precision (bottom tip points exactly to clicked pixel)
   const placePin = (
     lat: number,
     lng: number,
@@ -118,24 +122,32 @@ export default function GuessMap({
     if (!map || !L) return;
     setGuessCoord({ lat, lng });
 
+    // Precise SVG pin: iconSize is 32x42, iconAnchor is [16, 41] (exact bottom center tip)
     const pinIcon = L.divIcon({
       className: 'custom-guess-pin',
       html: `
-        <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-full">
-          <div class="w-8 h-8 rounded-full bg-red-500 border-2 border-white shadow-lg flex items-center justify-center animate-bounce">
-            <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
-          </div>
-          <div class="absolute -bottom-1 w-2 h-2 bg-red-600 rotate-45"></div>
+        <div style="width: 32px; height: 42px; position: relative; pointer-events: none; margin: 0; padding: 0;">
+          <svg width="32" height="42" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.7));">
+            <path d="M16 1C7.716 1 1 7.716 1 16C1 27.5 16 41 16 41C16 41 31 27.5 31 16C31 7.716 24.284 1 16 1Z" fill="#EF4444" stroke="#FFFFFF" stroke-width="2"/>
+            <circle cx="16" cy="16" r="5.5" fill="#FFFFFF"/>
+            <circle cx="16" cy="16" r="2.5" fill="#EF4444"/>
+          </svg>
+          <div style="position: absolute; bottom: 0; left: 16px; transform: translate(-50%, 50%); width: 5px; height: 5px; border-radius: 50%; background: #EF4444; border: 1px solid #FFFFFF;"></div>
         </div>
       `,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
+      iconSize: [32, 42],
+      iconAnchor: [16, 41],
     });
 
     if (markerRef.current) {
       markerRef.current.setLatLng([lat, lng]);
     } else {
-      markerRef.current = L.marker([lat, lng], { icon: pinIcon }).addTo(map);
+      const marker = L.marker([lat, lng], { icon: pinIcon, draggable: true }).addTo(map);
+      marker.on('dragend', (evt) => {
+        const newPos = evt.target.getLatLng();
+        setGuessCoord({ lat: newPos.lat, lng: newPos.lng });
+      });
+      markerRef.current = marker;
     }
   };
 
@@ -148,21 +160,21 @@ export default function GuessMap({
     }
     if (mapInstanceRef.current) {
       mapInstanceRef.current.setView([SRM_CENTER_LAT, SRM_CENTER_LNG], DEFAULT_ZOOM, {
-        animate: true,
+        animate: false,
       });
       setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150);
     }
   }, [roundNumber]);
 
-  // Invalidate map size when expanding/collapsing or hovering
+  // Invalidate map size when expanding/collapsing
   useEffect(() => {
     const timer = setTimeout(() => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.invalidateSize();
       }
-    }, 250);
+    }, 100);
     return () => clearTimeout(timer);
-  }, [isExpanded, isHovered]);
+  }, [isExpanded]);
 
   const handleToggleLayer = () => {
     if (!mapInstanceRef.current) return;
@@ -209,14 +221,10 @@ export default function GuessMap({
 
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`relative transition-all duration-300 ease-out z-20 flex flex-col ${
+      className={`relative z-20 flex flex-col ${
         isExpanded
-          ? 'w-[92vw] sm:w-[500px] h-[540px] shadow-2xl'
-          : isHovered
-          ? 'w-[88vw] sm:w-[420px] h-[360px] shadow-xl'
-          : 'w-[82vw] sm:w-[340px] h-[260px] shadow-lg opacity-90 hover:opacity-100'
+          ? 'w-[94vw] sm:w-[500px] h-[520px] shadow-2xl'
+          : 'w-[88vw] sm:w-[380px] h-[340px] shadow-xl'
       } rounded-2xl overflow-hidden bg-slate-900 border border-slate-700/80 backdrop-blur-md`}
     >
       {/* Map Header Toolbar */}

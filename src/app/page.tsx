@@ -2,14 +2,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Compass, Play, MapPin, Key } from 'lucide-react';
-import ApiKeyModal from '@/components/ApiKeyModal';
+import { Compass, Play, MapPin } from 'lucide-react';
 
 export default function LandingPage() {
   const router = useRouter();
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
 
   const handleStartGame = async () => {
     if (isStarting) return;
@@ -41,20 +39,15 @@ export default function LandingPage() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Top Bar / Location Pill & API Key Toggle */}
+      {/* Top Bar / Location Pill */}
       <header className="w-full max-w-md pt-4 flex items-center justify-between z-10">
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-semibold text-slate-300">
           <MapPin className="w-3.5 h-3.5 text-amber-400" />
           <span>SRM KTR Campus</span>
         </div>
-        <button
-          onClick={() => setIsKeyModalOpen(true)}
-          title="Configure Google Street View API Key"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-xs font-medium text-amber-300 transition"
-        >
-          <Key className="w-3.5 h-3.5" />
-          <span>Street View Key</span>
-        </button>
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+          <span>v1.0</span>
+        </div>
       </header>
 
       {/* Center Hero Section */}
@@ -118,12 +111,6 @@ export default function LandingPage() {
           Built for SRM Institute of Science and Technology, Kattankulathur
         </div>
       </footer>
-
-      {/* Google Maps API Key Modal */}
-      <ApiKeyModal
-        isOpen={isKeyModalOpen}
-        onClose={() => setIsKeyModalOpen(false)}
-      />
     </main>
   );
 }

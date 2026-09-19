@@ -15,26 +15,51 @@ export async function POST() {
       );
     }
 
-    // 2. Select 5 unique locations with escalating round difficulty
-    const easy = allLocations.filter((l) => l.difficulty === 'easy').sort(() => 0.5 - Math.random());
-    const medium = allLocations.filter((l) => l.difficulty === 'medium').sort(() => 0.5 - Math.random());
-    const hard = allLocations.filter((l) => l.difficulty === 'hard').sort(() => 0.5 - Math.random());
+    // 2. Select 5 geographically distant locations with escalating difficulty
+    // Zones: South Campus, North Campus, Potheri / West, Central Campus, East Academic
+    const zones = ['South Campus', 'North Campus', 'Potheri / West', 'Central Campus', 'East Academic']
+      .sort(() => 0.5 - Math.random());
 
-    const chosen = new Set<string>();
-    const pickOne = (pool: typeof allLocations): (typeof allLocations)[0] => {
-      const available = pool.filter((l) => !chosen.has(l.id));
-      const picked = available.length > 0 ? available[0] : allLocations.filter((l) => !chosen.has(l.id))[0];
-      chosen.add(picked.id);
-      return picked;
-    };
+    const selectedLocations: typeof allLocations = [];
+    const chosenIds = new Set<string>();
 
-    const selectedLocations = [
-      pickOne(easy),           // Round 1: Easy (iconic wide view)
-      pickOne([...easy, ...medium]), // Round 2: Easy-Medium
-      pickOne(medium),         // Round 3: Medium (recent campus photo)
-      pickOne([...medium, ...hard]), // Round 4: Medium-Hard
-      pickOne(hard),           // Round 5: Hard (zoomed-in crop!)
-    ];
+    const targetDifficulties = ['easy', 'easy', 'medium', 'medium', 'hard'];
+
+    for (let i = 0; i < 5; i++) {
+      const targetZone = zones[i % zones.length];
+      const targetDiff = targetDifficulties[i];
+
+      // Prefer candidates matching the target zone and difficulty
+      let pool = allLocations.filter(
+        (l) => !chosenIds.has(l.id) && l.area === targetZone && l.difficulty === targetDiff
+      );
+
+      // Fallback 1: Any unused location in target zone
+      if (pool.length === 0) {
+        pool = allLocations.filter((l) => !chosenIds.has(l.id) && l.area === targetZone);
+      }
+
+      // Fallback 2: Any unused location in target difficulty that is far from previous picks
+      if (pool.length === 0) {
+        pool = allLocations.filter((l) => !chosenIds.has(l.id));
+      }
+
+      // Sort candidate by distance from previous picked location (maximize distance)
+      if (selectedLocations.length > 0) {
+        const lastLoc = selectedLocations[selectedLocations.length - 1];
+        pool.sort((a, b) => {
+          const distA = Math.hypot(a.latitude - lastLoc.latitude, a.longitude - lastLoc.longitude);
+          const distB = Math.hypot(b.latitude - lastLoc.latitude, b.longitude - lastLoc.longitude);
+          return distB - distA; // Furthest first
+        });
+      } else {
+        pool.sort(() => 0.5 - Math.random());
+      }
+
+      const picked = pool[0];
+      chosenIds.add(picked.id);
+      selectedLocations.push(picked);
+    }
 
     // 3. Create Game session
     const game = await prisma.game.create({

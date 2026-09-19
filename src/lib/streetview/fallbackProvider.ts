@@ -18,6 +18,12 @@ export class Fallback360Provider implements StreetViewProvider {
   private offscreenPanoCanvas: HTMLCanvasElement | null = null;
 
   private currentImageUrl: string | null = null;
+  private isPhotosphere = false;
+
+  // 2D Photo Mode Bounded Pan & Zoom state
+  private zoom = 1.0;
+  private panX = 0;
+  private panY = 0;
 
   async init(container: HTMLElement, options: PanoramaOptions): Promise<void> {
     this.container = container;
@@ -25,6 +31,7 @@ export class Fallback360Provider implements StreetViewProvider {
     this.currentImageUrl = options.imageUrl || null;
     this.yaw = options.initialHeading ?? 0;
     this.pitch = options.initialPitch ?? 0;
+    this.reset();
 
     container.innerHTML = '';
     const canvas = document.createElement('canvas');
@@ -71,6 +78,10 @@ export class Fallback360Provider implements StreetViewProvider {
         if (ctx) {
           ctx.drawImage(img, 0, 0, off.width, off.height);
           this.offscreenPanoCanvas = off;
+          // Equirectangular 360 images have a 2:1 aspect ratio
+          const ratio = off.width / off.height;
+          this.isPhotosphere = Math.abs(ratio - 2.0) < 0.15;
+          this.reset();
         }
       };
 
@@ -187,6 +198,26 @@ export class Fallback360Provider implements StreetViewProvider {
     this.offscreenPanoCanvas = off;
   }
 
+  private clampPan(): void {
+    if (!this.canvas || !this.offscreenPanoCanvas) return;
+    const cw = this.canvas.width;
+    const ch = this.canvas.height;
+    const iw = this.offscreenPanoCanvas.width;
+    const ih = this.offscreenPanoCanvas.height;
+
+    const baseScale = Math.max(cw / iw, ch / ih);
+    const scale = baseScale * this.zoom;
+
+    const renderW = iw * scale;
+    const renderH = ih * scale;
+
+    const maxPanX = Math.max(0, (renderW - cw) / 2);
+    const maxPanY = Math.max(0, (renderH - ch) / 2);
+
+    this.panX = Math.max(-maxPanX, Math.min(maxPanX, this.panX));
+    this.panY = Math.max(-maxPanY, Math.min(maxPanY, this.panY));
+  }
+
   private bindEvents(): void {
     if (!this.canvas) return;
 
@@ -204,12 +235,18 @@ export class Fallback360Provider implements StreetViewProvider {
       this.lastX = clientX;
       this.lastY = clientY;
 
-      // Rotate camera
-      const sensitivity = 0.2;
-      this.yaw = (this.yaw - dx * sensitivity) % 360;
-      if (this.yaw < 0) this.yaw += 360;
-
-      this.pitch = Math.max(-80, Math.min(80, this.pitch + dy * sensitivity));
+      if (!this.isPhotosphere) {
+        // High-DPI pan factor
+        const dpr = window.devicePixelRatio || 1;
+        this.panX += dx * dpr;
+        this.panY += dy * dpr;
+        this.clampPan();
+      } else {
+        const sensitivity = 0.2;
+        this.yaw = (this.yaw - dx * sensitivity) % 360;
+        if (this.yaw < 0) this.yaw += 360;
+        this.pitch = Math.max(-45, Math.min(45, this.pitch + dy * sensitivity));
+      }
     };
 
     const onPointerUp = () => {
@@ -248,10 +285,24 @@ export class Fallback360Provider implements StreetViewProvider {
       'wheel',
       (e) => {
         e.preventDefault();
-        this.fov = Math.max(35, Math.min(100, this.fov + e.deltaY * 0.05));
+        if (!this.isPhotosphere) {
+          const delta = e.deltaY < 0 ? 0.25 : -0.25;
+          this.zoom = Math.max(1.0, Math.min(4.5, this.zoom + delta));
+          this.clampPan();
+        } else {
+          this.fov = Math.max(35, Math.min(100, this.fov + e.deltaY * 0.05));
+        }
       },
       { passive: false }
     );
+
+    // Double-click toggle zoom
+    this.canvas.addEventListener('dblclick', () => {
+      if (!this.isPhotosphere) {
+        this.zoom = this.zoom > 1.5 ? 1.0 : 2.4;
+        this.clampPan();
+      }
+    });
   }
 
   private startRenderLoop(): void {
@@ -282,66 +333,65 @@ export class Fallback360Provider implements StreetViewProvider {
 
     ctx.clearRect(0, 0, cw, ch);
 
-    // Render cylindrical projection of equirectangular panorama
     const pano = this.offscreenPanoCanvas;
+
+    // 1. 2D Photo Mode: Strictly Bounded Pan & Zoom (guaranteed NEVER to pan outside!)
+    if (!this.isPhotosphere) {
+      const iw = pano.width;
+      const ih = pano.height;
+      const baseScale = Math.max(cw / iw, ch / ih);
+      const scale = baseScale * this.zoom;
+      const renderW = iw * scale;
+      const renderH = ih * scale;
+
+      const maxPanX = Math.max(0, (renderW - cw) / 2);
+      const maxPanY = Math.max(0, (renderH - ch) / 2);
+
+      this.panX = Math.max(-maxPanX, Math.min(maxPanX, this.panX));
+      this.panY = Math.max(-maxPanY, Math.min(maxPanY, this.panY));
+
+      const drawX = (cw - renderW) / 2 + this.panX;
+      const drawY = (ch - renderH) / 2 + this.panY;
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(pano, drawX, drawY, renderW, renderH);
+      return;
+    }
+
+    // 2. 360 Cylindrical Projection Mode (Equirectangular)
     const panoW = pano.width;
     const panoH = pano.height;
 
-    // Normalize yaw: 0 to 1
     const normYaw = (this.yaw % 360) / 360;
     const fovFactor = this.fov / 90;
 
-    // Source slice width based on FOV
     const srcW = panoW * fovFactor * (cw / ch);
     const srcH = panoH * fovFactor;
 
     const srcX = normYaw * panoW - srcW / 2;
-    const normPitch = (this.pitch + 90) / 180;
-    const srcY = (1 - normPitch) * panoH - srcH / 2;
+    const normPitch = (this.pitch + 45) / 90;
+    const srcY = Math.max(0, Math.min(panoH - srcH, (1 - normPitch) * (panoH - srcH)));
 
-    // Draw panoramic texture with seamless horizontal wrapping
     const drawWrapped = (sx: number, sy: number, sw: number, sh: number) => {
-      // If sx is negative or extends past panoW, wrap into 2 drawImage calls
       let left = sx;
       while (left < 0) left += panoW;
       left = left % panoW;
 
       if (left + sw <= panoW) {
-        ctx.drawImage(pano, left, Math.max(0, Math.min(panoH - sh, sy)), sw, sh, 0, 0, cw, ch);
+        ctx.drawImage(pano, left, sy, sw, sh, 0, 0, cw, ch);
       } else {
         const part1W = panoW - left;
         const part2W = sw - part1W;
         const screenPart1W = (part1W / sw) * cw;
         const screenPart2W = cw - screenPart1W;
 
-        ctx.drawImage(
-          pano,
-          left,
-          Math.max(0, Math.min(panoH - sh, sy)),
-          part1W,
-          sh,
-          0,
-          0,
-          screenPart1W,
-          ch
-        );
-        ctx.drawImage(
-          pano,
-          0,
-          Math.max(0, Math.min(panoH - sh, sy)),
-          part2W,
-          sh,
-          screenPart1W,
-          0,
-          screenPart2W,
-          ch
-        );
+        ctx.drawImage(pano, left, sy, part1W, sh, 0, 0, screenPart1W, ch);
+        ctx.drawImage(pano, 0, sy, part2W, sh, screenPart1W, 0, screenPart2W, ch);
       }
     };
 
     drawWrapped(srcX, srcY, srcW, srcH);
-
-    // Subtle compass indicator at top right of viewport
     this.drawCompassOverlay(ctx, cw);
   }
 
@@ -354,7 +404,6 @@ export class Fallback360Provider implements StreetViewProvider {
     ctx.translate(compassX, compassY);
     ctx.rotate(((-this.yaw + 360) * Math.PI) / 180);
 
-    // Background circle
     ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI * 2);
@@ -363,7 +412,6 @@ export class Fallback360Provider implements StreetViewProvider {
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // North needle (red)
     ctx.fillStyle = '#ef4444';
     ctx.beginPath();
     ctx.moveTo(0, -radius + 4);
@@ -372,7 +420,6 @@ export class Fallback360Provider implements StreetViewProvider {
     ctx.closePath();
     ctx.fill();
 
-    // South needle (white)
     ctx.fillStyle = '#f8fafc';
     ctx.beginPath();
     ctx.moveTo(0, radius - 4);
@@ -381,13 +428,40 @@ export class Fallback360Provider implements StreetViewProvider {
     ctx.closePath();
     ctx.fill();
 
-    // "N" label
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 9px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('N', 0, -radius + 15);
 
     ctx.restore();
+  }
+
+  zoomIn(): void {
+    if (!this.isPhotosphere) {
+      this.zoom = Math.min(4.5, this.zoom + 0.35);
+      this.clampPan();
+    } else {
+      this.fov = Math.max(30, this.fov - 15);
+    }
+  }
+
+  zoomOut(): void {
+    if (!this.isPhotosphere) {
+      this.zoom = Math.max(1.0, this.zoom - 0.35);
+      this.clampPan();
+    } else {
+      this.fov = Math.min(100, this.fov + 15);
+    }
+  }
+
+  reset(): void {
+    this.zoom = 1.0;
+    this.panX = 0;
+    this.panY = 0;
+    this.yaw = 0;
+    this.pitch = 0;
+    this.fov = 75;
+    this.clampPan();
   }
 
   async loadPanorama(panoId: string): Promise<void> {
