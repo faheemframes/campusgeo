@@ -1,20 +1,30 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#020617',
+  themeColor: '#080b11',
 };
 
 export const metadata: Metadata = {
   title: 'Campus Geo — SRM KTR',
-  description: 'How well do you know SRM? Explore 360° panoramas, guess your campus location, and share your score!',
+  description: 'How well do you know SRM? Explore 360° campus spots, guess your location, and challenge your friends!',
 };
 
 export default function RootLayout({
@@ -23,10 +33,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full bg-slate-950">
-      <body className={`${inter.className} min-h-full h-full bg-slate-950 text-slate-100 flex flex-col antialiased`}>
+    <html lang="en" className={`h-full ${plusJakarta.variable} ${jetbrainsMono.variable} bg-[#080b11]`}>
+      <body className="font-sans min-h-full h-full bg-[#080b11] text-slate-100 flex flex-col antialiased">
         {children}
       </body>
     </html>
   );
 }
+

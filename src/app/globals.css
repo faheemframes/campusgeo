@@ -1,18 +1,25 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+@theme {
+  --font-sans: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: var(--font-mono), monospace;
+}
+
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #080b11;
+  --foreground: #f1f5f9;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
   overflow-x: hidden;
   user-select: none;
   -webkit-user-select: none;
 }
+
 
 /* Custom leaflet map fixes & pin markers */
 .leaflet-container {

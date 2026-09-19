@@ -128,115 +128,102 @@ export default function RoundResultModal({
   }, [actualLatitude, actualLongitude, guessLatitude, guessLongitude]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl bg-slate-900 border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-xl bg-slate-900 border border-white/[0.08] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[96dvh] sm:max-h-[90vh]">
         {/* Modal Header */}
-        <div className="px-6 py-4 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+        <div className="px-4 py-2.5 sm:px-6 sm:py-3.5 bg-slate-900/95 border-b border-white/[0.06] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-              Round {roundNumber} of {totalRounds} Result
+            <div className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-slate-300">
+              Round {roundNumber} of {totalRounds}
             </span>
           </div>
-          <span className="text-xs font-medium text-slate-400">
+          <span className="text-xs font-medium text-slate-400 truncate max-w-[180px] sm:max-w-xs">
             {locationName}
           </span>
         </div>
 
         {/* Map View */}
-        <div className="relative w-full h-64 sm:h-80 bg-slate-950">
+        <div className="relative w-full h-44 sm:h-72 bg-slate-950 shrink-0">
           <div ref={mapContainerRef} className="w-full h-full" />
           
           {/* Map Legend Overlay */}
-          <div className="absolute bottom-3 left-3 z-[500] flex items-center gap-3 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/70 text-xs shadow-md">
-            <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+          <div className="absolute bottom-2.5 left-2.5 z-[500] flex items-center gap-2.5 bg-slate-900/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/[0.08] text-[10px] sm:text-xs shadow-md">
+            <div className="flex items-center gap-1 text-emerald-400 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
               <span>Actual</span>
             </div>
-            <div className="flex items-center gap-1.5 text-red-400 font-semibold">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+            <div className="flex items-center gap-1 text-red-400 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
               <span>Your Guess</span>
             </div>
           </div>
         </div>
 
         {/* Result Stats Section */}
-        <div className="p-6 bg-slate-900 flex flex-col gap-5">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="p-3 sm:p-5 bg-slate-900 flex flex-col gap-2.5 sm:gap-4 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             {/* Distance Card */}
-            <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex flex-col">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-1">
-                <Navigation className="w-3.5 h-3.5 text-blue-400" /> Distance Off
+            <div className="bg-slate-950/60 border border-white/[0.06] rounded-xl p-2.5 sm:p-3.5 flex flex-col">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-0.5">
+                <Navigation className="w-3 h-3 text-blue-400 shrink-0" /> Distance Off
               </span>
-              <span className="text-2xl sm:text-3xl font-black text-white">
+              <span className="text-xl sm:text-2xl font-black font-mono text-white">
                 {formatDistance(distanceMeters)}
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5">from actual point</span>
+              <span className="text-[10px] text-slate-500 mt-0.5 font-mono">from target</span>
             </div>
 
             {/* Score Card */}
-            <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex flex-col">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-1">
-                <Trophy className="w-3.5 h-3.5 text-amber-400" /> Round Score
+            <div className="bg-slate-950/60 border border-white/[0.06] rounded-xl p-2.5 sm:p-3.5 flex flex-col">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-0.5">
+                <Trophy className="w-3 h-3 text-amber-400 shrink-0" /> Round Score
               </span>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl sm:text-3xl font-black text-amber-400">
+                <span className="text-xl sm:text-2xl font-black font-mono text-amber-400">
                   {score.toLocaleString()}
                 </span>
-                <span className="text-xs text-slate-500 font-medium">/ 5,000</span>
+                <span className="text-[10px] text-slate-500 font-mono">/ 5k</span>
               </div>
-              <span className="text-[11px] text-slate-500 mt-0.5">points awarded</span>
+              <span className="text-[10px] text-slate-500 mt-0.5 font-mono">points awarded</span>
             </div>
           </div>
 
-          {/* Prompt Format Visual Breakdown:
-              ACTUAL LOCATION
-              ●
-                  183 m
-              ●
-              YOUR GUESS
-          */}
-          <div className="bg-slate-950/60 rounded-2xl p-3.5 border border-slate-800 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2.5">
+          {/* Location Summary Row */}
+          <div className="bg-slate-950/40 rounded-xl p-2 sm:p-2.5 border border-white/[0.06] flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2 min-w-0 pr-2">
               {imageUrl ? (
                 <img
                   src={imageUrl}
                   alt={locationName}
-                  className="w-12 h-12 rounded-xl object-cover border border-slate-700 shadow-md flex-shrink-0"
+                  className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg object-cover border border-slate-700 shadow-md flex-shrink-0"
                 />
               ) : (
-                <div className="w-3 h-3 rounded-full bg-emerald-500 border border-emerald-300" />
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-emerald-300" />
               )}
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-slate-400">Actual Location</span>
-                <span className="text-slate-200 font-medium line-clamp-1">{locationName}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[9px] uppercase font-bold text-slate-400">Target Spot</span>
+                <span className="text-slate-200 font-medium truncate text-xs">{locationName}</span>
               </div>
             </div>
 
-            <div className="flex flex-col items-center px-3 border-x border-slate-800">
-              <span className="text-[10px] text-slate-500 uppercase font-mono">Span</span>
-              <span className="text-amber-400 font-bold font-mono">{formatDistance(distanceMeters)}</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="flex flex-col text-right">
-                <span className="text-[10px] uppercase font-bold text-slate-400">Your Guess</span>
-                <span className="text-slate-200 font-medium">{score} pts</span>
-              </div>
-              <div className="w-3 h-3 rounded-full bg-red-500 border border-red-300" />
+            <div className="flex flex-col items-end shrink-0 pl-2">
+              <span className="text-[9px] uppercase font-bold text-slate-400">Accuracy</span>
+              <span className="text-amber-400 font-mono font-bold text-xs">{score > 4500 ? 'Bullseye! 🎯' : `${score} pts`}</span>
             </div>
           </div>
 
           {/* Action CTA */}
           <button
             onClick={onNext}
-            className="w-full py-4 rounded-2xl font-black text-base tracking-wider uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 shadow-lg shadow-amber-500/25 hover:brightness-110 active:scale-[0.99] transition flex items-center justify-center gap-2"
+            className="w-full py-2.5 sm:py-3.5 rounded-xl font-black text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 shadow-md shadow-amber-500/20 hover:brightness-110 active:scale-[0.99] transition flex items-center justify-center gap-2 shrink-0"
           >
             <span>{isGameOver ? 'SEE FINAL SCORE' : 'NEXT ROUND'}</span>
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>
     </div>
   );
 }
+
