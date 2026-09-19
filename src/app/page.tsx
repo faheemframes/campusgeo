@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Compass, Play, MapPin } from 'lucide-react';
+import { Compass, Play, MapPin, Camera } from 'lucide-react';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -96,8 +96,17 @@ export default function LandingPage() {
           )}
         </button>
 
+        {/* Secondary Action: Add a Campus Spot */}
+        <button
+          onClick={() => router.push('/contribute')}
+          className="mt-3 w-full py-2.5 px-4 rounded-xl font-bold text-xs tracking-wide bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center gap-2 active:scale-95"
+        >
+          <Camera className="w-4 h-4 text-amber-400" />
+          <span>Contribute a Campus Spot</span>
+        </button>
+
         {/* Secondary information */}
-        <p className="mt-6 text-sm font-semibold tracking-wide text-slate-400">
+        <p className="mt-5 text-sm font-semibold tracking-wide text-slate-400">
           Explore. Guess. Lock it in.
         </p>
       </div>

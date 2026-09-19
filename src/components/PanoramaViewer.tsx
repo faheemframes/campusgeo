@@ -8,6 +8,7 @@ interface PanoramaViewerProps {
   panoId: string;
   imageUrl?: string;
   areaHint?: string;
+  difficulty?: string;
   roundNumber: number;
   totalRounds: number;
   onLoaded?: () => void;
@@ -17,6 +18,7 @@ export default function PanoramaViewer({
   panoId,
   imageUrl,
   areaHint,
+  difficulty = 'easy',
   roundNumber,
   totalRounds,
   onLoaded,
@@ -47,6 +49,7 @@ export default function PanoramaViewer({
       .init(container, {
         panoId,
         imageUrl,
+        difficulty,
         initialHeading: 0,
         initialPitch: 0,
         initialZoom: 1,
@@ -125,6 +128,20 @@ export default function PanoramaViewer({
             {roundNumber} <span className="text-slate-500 font-normal">/ {totalRounds}</span>
           </span>
         </div>
+
+        {difficulty && (
+          <div
+            className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold uppercase tracking-wider backdrop-blur-md shadow-md ${
+              difficulty === 'hard'
+                ? 'bg-rose-950/80 border-rose-600/60 text-rose-300'
+                : difficulty === 'medium'
+                ? 'bg-amber-950/80 border-amber-600/60 text-amber-300'
+                : 'bg-emerald-950/80 border-emerald-600/60 text-emerald-300'
+            }`}
+          >
+            {difficulty === 'hard' ? 'Hard • Zoom Clue' : difficulty === 'medium' ? 'Medium' : 'Easy'}
+          </div>
+        )}
 
         {areaHint && (
           <div className="hidden sm:flex bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/60 shadow-lg text-xs font-medium text-slate-300 items-center gap-1.5">

@@ -6,6 +6,7 @@ export interface PanoramaOptions {
   initialHeading?: number;
   initialPitch?: number;
   initialZoom?: number;
+  difficulty?: string;
   onReady?: () => void;
   onError?: (error: Error) => void;
 }

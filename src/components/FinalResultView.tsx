@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Share2, RotateCcw, Trophy, MapPin, Sparkles, Navigation } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Share2, RotateCcw, Trophy, MapPin, Sparkles, Navigation, Camera } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import ShareStoryCard from './ShareStoryCard';
 import { formatDistance } from '@/lib/scoring';
@@ -24,6 +25,7 @@ export default function FinalResultView({
   rounds,
   onPlayAgain,
 }: FinalResultViewProps) {
+  const router = useRouter();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
@@ -134,10 +136,18 @@ export default function FinalResultView({
 
             <button
               onClick={onPlayAgain}
-              className="w-full py-3.5 rounded-2xl font-bold text-sm tracking-wider uppercase bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 hover:text-white transition flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-2xl font-bold text-sm tracking-wider uppercase bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 hover:text-white transition flex items-center justify-center gap-2 active:scale-95"
             >
               <RotateCcw className="w-4 h-4" />
               <span>PLAY AGAIN</span>
+            </button>
+
+            <button
+              onClick={() => router.push('/contribute')}
+              className="w-full py-3 rounded-2xl font-bold text-xs tracking-wider uppercase bg-slate-900/90 hover:bg-slate-800 text-slate-400 border border-slate-800 hover:text-amber-300 hover:border-slate-700 transition flex items-center justify-center gap-2 active:scale-95"
+            >
+              <Camera className="w-4 h-4 text-amber-400" />
+              <span>Contribute a Campus Spot</span>
             </button>
           </div>
         </div>

@@ -9,6 +9,7 @@ interface GuessMapProps {
   onLockGuess: (lat: number, lng: number) => void;
   isSubmitting?: boolean;
   disabled?: boolean;
+  isMobileMode?: boolean;
 }
 
 // SRM KTR Campus Coordinates
@@ -21,6 +22,7 @@ export default function GuessMap({
   onLockGuess,
   isSubmitting = false,
   disabled = false,
+  isMobileMode = false,
 }: GuessMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<LType.Map | null>(null);
@@ -166,15 +168,15 @@ export default function GuessMap({
     }
   }, [roundNumber]);
 
-  // Invalidate map size when expanding/collapsing
+  // Invalidate map size when expanding/collapsing or switching mobile mode
   useEffect(() => {
     const timer = setTimeout(() => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.invalidateSize();
       }
-    }, 100);
+    }, 120);
     return () => clearTimeout(timer);
-  }, [isExpanded]);
+  }, [isExpanded, isMobileMode]);
 
   const handleToggleLayer = () => {
     if (!mapInstanceRef.current) return;
@@ -222,10 +224,12 @@ export default function GuessMap({
   return (
     <div
       className={`relative z-20 flex flex-col ${
-        isExpanded
-          ? 'w-[94vw] sm:w-[500px] h-[520px] shadow-2xl'
-          : 'w-[88vw] sm:w-[380px] h-[340px] shadow-xl'
-      } rounded-2xl overflow-hidden bg-slate-900 border border-slate-700/80 backdrop-blur-md`}
+        isMobileMode
+          ? 'w-full h-full rounded-none border-t border-slate-800 shadow-none'
+          : isExpanded
+          ? 'w-[94vw] sm:w-[500px] h-[520px] shadow-2xl rounded-2xl border border-slate-700/80 backdrop-blur-md'
+          : 'w-[88vw] sm:w-[380px] h-[340px] shadow-xl rounded-2xl border border-slate-700/80 backdrop-blur-md'
+      } overflow-hidden bg-slate-900`}
     >
       {/* Map Header Toolbar */}
       <div className="absolute top-2 left-2 z-[500] flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-700/60 text-xs text-slate-200">
@@ -233,7 +237,7 @@ export default function GuessMap({
         <span className="font-semibold tracking-wide">SRM KTR Campus</span>
       </div>
 
-      <div className="absolute top-2 right-12 z-[500] flex items-center gap-1">
+      <div className={`absolute top-2 ${isMobileMode ? 'right-2' : 'right-12'} z-[500] flex items-center gap-1`}>
         <button
           onClick={handleToggleLayer}
           title={isSatellite ? 'Switch to Street Map' : 'Switch to Satellite'}
@@ -252,13 +256,15 @@ export default function GuessMap({
         >
           <Crosshair className="w-3.5 h-3.5" />
         </button>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          title={isExpanded ? 'Minimize Map' : 'Maximize Map'}
-          className="p-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
-        >
-          {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-        </button>
+        {!isMobileMode && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            title={isExpanded ? 'Minimize Map' : 'Maximize Map'}
+            className="p-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+          >
+            {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
 
       {/* Center Aim Reticle (visible when no pin placed so user can pan then pin) */}
@@ -274,7 +280,7 @@ export default function GuessMap({
       <div ref={mapContainerRef} className="w-full flex-1 bg-slate-950" />
 
       {/* Action Footer */}
-      <div className="p-2.5 sm:p-3 bg-slate-900/95 border-t border-slate-800 flex items-center justify-between gap-2">
+      <div className="p-2.5 sm:p-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] bg-slate-900/95 border-t border-slate-800 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           {guessCoord ? (
             <button

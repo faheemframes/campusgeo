@@ -46,6 +46,17 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [totalScore, setTotalScore] = useState<number>(0);
 
+  // Mobile adaptive layout state ('split' | 'photo' | 'map')
+  const [mobileMode, setMobileMode] = useState<'split' | 'photo' | 'map'>('split');
+  const [isMobileScreen, setIsMobileScreen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobileScreen(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Fetch round info
   const fetchRound = async (roundNum: number) => {
     setIsLoadingRound(true);
@@ -169,26 +180,80 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
   }
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-slate-950">
-      {/* 360 Panorama Viewport */}
-      {roundInfo && (
-        <PanoramaViewer
-          key={`pano-${roundInfo.panoId}`}
-          panoId={roundInfo.panoId}
-          imageUrl={roundInfo.imageUrl}
-          areaHint={roundInfo.area}
-          roundNumber={currentRoundNumber}
-          totalRounds={totalRounds}
-        />
-      )}
+    <main className="relative w-screen h-[100dvh] overflow-hidden bg-slate-950 flex flex-col sm:block">
+      {/* Mobile Mode Switcher Toolbar (Visible on small screens) */}
+      <div className="fixed top-3 left-1/2 -translate-x-1/2 z-40 sm:hidden flex items-center bg-slate-900/95 border border-slate-700/80 rounded-full p-1 shadow-2xl backdrop-blur-md">
+        <button
+          onClick={() => setMobileMode('photo')}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition ${
+            mobileMode === 'photo'
+              ? 'bg-amber-500 text-slate-950 shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          📷 Photo
+        </button>
+        <button
+          onClick={() => setMobileMode('split')}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition ${
+            mobileMode === 'split'
+              ? 'bg-amber-500 text-slate-950 shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          ↕️ Both
+        </button>
+        <button
+          onClick={() => setMobileMode('map')}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition ${
+            mobileMode === 'map'
+              ? 'bg-amber-500 text-slate-950 shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          🗺️ Map
+        </button>
+      </div>
 
-      {/* Floating Guess Map (Bottom Right / Mobile Bottom Sheet) */}
-      <div className="absolute bottom-4 right-4 z-30 pointer-events-auto">
+      {/* Campus Photo Viewport */}
+      <div
+        className={`w-full transition-all duration-200 ${
+          mobileMode === 'split'
+            ? 'h-[50%] sm:h-full sm:w-full sm:absolute sm:inset-0'
+            : mobileMode === 'photo'
+            ? 'h-full sm:h-full sm:w-full sm:absolute sm:inset-0'
+            : 'hidden sm:block sm:h-full sm:w-full sm:absolute sm:inset-0'
+        }`}
+      >
+        {roundInfo && (
+          <PanoramaViewer
+            key={`pano-${roundInfo.panoId}`}
+            panoId={roundInfo.panoId}
+            imageUrl={roundInfo.imageUrl}
+            areaHint={roundInfo.area}
+            difficulty={roundInfo.difficulty}
+            roundNumber={currentRoundNumber}
+            totalRounds={totalRounds}
+          />
+        )}
+      </div>
+
+      {/* Satellite Guess Map */}
+      <div
+        className={`w-full transition-all duration-200 z-30 ${
+          mobileMode === 'split'
+            ? 'h-[50%] sm:h-auto sm:w-auto sm:absolute sm:bottom-4 sm:right-4'
+            : mobileMode === 'map'
+            ? 'h-full sm:h-auto sm:w-auto sm:absolute sm:bottom-4 sm:right-4'
+            : 'hidden sm:block sm:h-auto sm:w-auto sm:absolute sm:bottom-4 sm:right-4'
+        }`}
+      >
         <GuessMap
           roundNumber={currentRoundNumber}
           onLockGuess={handleLockGuess}
           isSubmitting={isSubmittingGuess}
           disabled={activeResult !== null}
+          isMobileMode={isMobileScreen}
         />
       </div>
 

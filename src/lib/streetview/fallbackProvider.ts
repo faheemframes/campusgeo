@@ -19,6 +19,7 @@ export class Fallback360Provider implements StreetViewProvider {
 
   private currentImageUrl: string | null = null;
   private isPhotosphere = false;
+  private difficulty = 'easy';
 
   // 2D Photo Mode Bounded Pan & Zoom state
   private zoom = 1.0;
@@ -29,6 +30,7 @@ export class Fallback360Provider implements StreetViewProvider {
     this.container = container;
     this.currentPanoId = options.panoId;
     this.currentImageUrl = options.imageUrl || null;
+    this.difficulty = options.difficulty || 'easy';
     this.yaw = options.initialHeading ?? 0;
     this.pitch = options.initialPitch ?? 0;
     this.reset();
@@ -82,6 +84,21 @@ export class Fallback360Provider implements StreetViewProvider {
           const ratio = off.width / off.height;
           this.isPhotosphere = Math.abs(ratio - 2.0) < 0.15;
           this.reset();
+
+          // Escalating challenge: hard rounds start zoomed in on an architectural clue
+          if (!this.isPhotosphere) {
+            if (this.difficulty === 'hard') {
+              this.zoom = 2.0 + Math.random() * 0.5; // 2.0x to 2.5x zoom
+              this.panX = (Math.random() - 0.5) * 600;
+              this.panY = (Math.random() - 0.5) * 400;
+              this.clampPan();
+            } else if (this.difficulty === 'medium' && Math.random() > 0.4) {
+              this.zoom = 1.4 + Math.random() * 0.3; // 1.4x to 1.7x zoom
+              this.panX = (Math.random() - 0.5) * 300;
+              this.panY = (Math.random() - 0.5) * 200;
+              this.clampPan();
+            }
+          }
         }
       };
 
