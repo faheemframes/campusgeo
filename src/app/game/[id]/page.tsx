@@ -45,6 +45,12 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
   const [completedRounds, setCompletedRounds] = useState<CompletedRound[]>([]);
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [totalScore, setTotalScore] = useState<number>(0);
+  const [rankStats, setRankStats] = useState<{
+    rank: number;
+    totalPlayers: number;
+    topPercentage: number;
+    tierName?: string;
+  } | null>(null);
 
   // Mobile adaptive layout state ('split' | 'photo' | 'map')
   const [mobileMode, setMobileMode] = useState<'split' | 'photo' | 'map'>('split');
@@ -137,6 +143,10 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
       setCompletedRounds((prev) => [...prev, completed]);
       setTotalScore(data.totalGameScore);
 
+      if (data.rankStats) {
+        setRankStats(data.rankStats);
+      }
+
       if (data.isGameOver || currentRoundNumber >= 5) {
         setIsGameOver(true);
       }
@@ -172,8 +182,10 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
   if (isGameOver && !activeResult) {
     return (
       <FinalResultView
+        gameId={gameId}
         totalScore={totalScore}
         rounds={completedRounds}
+        rankStats={rankStats}
         onPlayAgain={handlePlayAgain}
       />
     );

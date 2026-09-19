@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { calculateHaversineDistance, calculateScore } from '@/lib/scoring';
 import { resolveGame } from '@/lib/gameSession';
+import { calculatePlayerRank } from '@/lib/ranking';
 
 export async function POST(
   request: NextRequest,
@@ -78,6 +79,11 @@ export async function POST(
       },
     }).catch(() => {});
 
+    let rankStats = null;
+    if (isGameOver) {
+      rankStats = await calculatePlayerRank(totalGameScore);
+    }
+
     // Return reveal payload
     return NextResponse.json({
       roundNumber,
@@ -90,6 +96,7 @@ export async function POST(
       imageUrl: round.location.imageUrl,
       totalGameScore,
       isGameOver,
+      rankStats,
       hasNextRound: roundNumber < 5,
     });
   } catch (error: any) {

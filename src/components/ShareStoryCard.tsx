@@ -15,6 +15,12 @@ interface ShareStoryCardProps {
   totalScore: number;
   maxScore?: number;
   rounds: ShareRound[];
+  rankStats?: {
+    rank: number;
+    totalPlayers: number;
+    topPercentage: number;
+    tierName?: string;
+  } | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -23,6 +29,7 @@ export default function ShareStoryCard({
   totalScore,
   maxScore = 25000,
   rounds,
+  rankStats,
   isOpen,
   onClose,
 }: ShareStoryCardProps) {
@@ -140,6 +147,18 @@ export default function ShareStoryCard({
     ctx.font = '800 30px -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.letterSpacing = '2px';
     ctx.fillText(tier, width / 2, pillY + 46);
+
+    // Rank & Percentile Sub-Banner
+    if (rankStats) {
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = '800 24px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.letterSpacing = '1.5px';
+      ctx.fillText(
+        `RANK #${rankStats.rank} OF ${rankStats.totalPlayers} PLAYERS • TOP ${rankStats.topPercentage}%`,
+        width / 2,
+        pillY + 105
+      );
+    }
 
     // 3. 5-ROUND BREAKDOWN CONTAINER
     const boxY = 980;

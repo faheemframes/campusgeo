@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { selectDistinctGameLocations } from '@/lib/locationSelection';
 
 export function encodeGameId(locationIds: string[]): string {
   const payload = JSON.stringify(locationIds);
@@ -34,37 +35,41 @@ export async function resolveGame(gameId: string) {
   }
 
   // 2. If not found (e.g. request routed to a new serverless container instance):
-  // Attempt to decode location IDs from the gameId token
-  const decodedLocIds = decodeGameId(gameId);
-
-  let targetLocIds: string[] = [];
-  if (decodedLocIds) {
-    targetLocIds = decodedLocIds;
-  } else {
-    // Fallback: pick 5 active locations to recover session seamlessly
-    const activeLocs = await prisma.location.findMany({
-      where: { active: true },
-      take: 5,
-    });
-    targetLocIds = activeLocs.map((l) => l.id);
-  }
-
-  // Verify locations exist in database
-  const existingLocations = await prisma.location.findMany({
-    where: { id: { in: targetLocIds } },
+  // Fetch active locations
+  const allActiveLocs = await prisma.location.findMany({
+    where: { active: true },
   });
 
-  // Preserve exact decoded order of targetLocIds
-  const locMap = new Map(existingLocations.map((l) => [l.id, l]));
-  let finalLocations = targetLocIds.map((id) => locMap.get(id)).filter(Boolean) as typeof existingLocations;
+  // Attempt to decode location IDs from the gameId token
+  const decodedLocIds = decodeGameId(gameId);
+  const locMap = new Map(allActiveLocs.map((l) => [l.id, l]));
 
-  // If some are missing (rare), fill with active locations
+  let candidateLocs = (decodedLocIds || [])
+    .map((id) => locMap.get(id))
+    .filter(Boolean) as typeof allActiveLocs;
+
+  // Strict deduplication by Image URL and Location ID
+  const chosenImages = new Set<string>();
+  const chosenIds = new Set<string>();
+  const uniqueLocs: typeof allActiveLocs = [];
+
+  for (const loc of candidateLocs) {
+    const img = (loc.imageUrl || loc.panoId).trim();
+    if (!chosenImages.has(img) && !chosenIds.has(loc.id)) {
+      chosenImages.add(img);
+      chosenIds.add(loc.id);
+      uniqueLocs.push(loc);
+    }
+  }
+
+  // If fewer than 5 unique locations, fill with distinct active locations
+  let finalLocations = uniqueLocs;
   if (finalLocations.length < 5) {
-    const extraLocs = await prisma.location.findMany({
-      where: { active: true, id: { notIn: finalLocations.map((l) => l.id) } },
-      take: 5 - finalLocations.length,
-    });
-    finalLocations = [...finalLocations, ...extraLocs];
+    const pool = allActiveLocs.filter(
+      (l) => !chosenImages.has((l.imageUrl || l.panoId).trim()) && !chosenIds.has(l.id)
+    );
+    const fillers = selectDistinctGameLocations(pool, 5 - finalLocations.length);
+    finalLocations = [...finalLocations, ...fillers];
   }
 
   // Create game and rounds in this serverless container's DB

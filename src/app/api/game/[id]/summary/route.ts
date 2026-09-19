@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { resolveGame } from '@/lib/gameSession';
+import { calculatePlayerRank } from '@/lib/ranking';
 
 export async function GET(
   request: NextRequest,
@@ -15,10 +16,13 @@ export async function GET(
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
     }
 
+    const rankStats = game.isFinished ? await calculatePlayerRank(game.totalScore) : null;
+
     return NextResponse.json({
       gameId: game.id,
       totalScore: game.totalScore,
       isFinished: game.isFinished,
+      rankStats,
       createdAt: game.createdAt,
       rounds: game.rounds.map((r) => ({
         roundNumber: r.roundNumber,

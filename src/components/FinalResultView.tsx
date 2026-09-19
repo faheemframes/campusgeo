@@ -14,19 +14,51 @@ interface FinalRound {
   locationName: string;
 }
 
+export interface RankStats {
+  rank: number;
+  totalPlayers: number;
+  topPercentage: number;
+  tierName?: string;
+}
+
 interface FinalResultViewProps {
+  gameId?: string;
   totalScore: number;
   rounds: FinalRound[];
+  rankStats?: RankStats | null;
   onPlayAgain: () => void;
 }
 
 export default function FinalResultView({
+  gameId,
   totalScore,
   rounds,
+  rankStats,
   onPlayAgain,
 }: FinalResultViewProps) {
   const router = useRouter();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [stats, setStats] = useState<RankStats | null>(rankStats || null);
+
+  useEffect(() => {
+    if (rankStats) {
+      setStats(rankStats);
+    } else if (gameId && !stats) {
+      fetch(`/api/game/${gameId}/rank`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && typeof data.rank === 'number') {
+            setStats({
+              rank: data.rank,
+              totalPlayers: data.totalPlayers,
+              topPercentage: data.topPercentage,
+              tierName: data.tierName,
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [rankStats, gameId]);
 
   useEffect(() => {
     // Fire celebratory confetti on finish
@@ -78,17 +110,31 @@ export default function FinalResultView({
             </span>
           </div>
 
-          <div className="mt-1 sm:mt-2 flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] sm:text-xs font-semibold text-slate-300">
-            <span>5 ROUNDS</span>
-            <span className="text-slate-600">•</span>
-            <span className="text-amber-400 font-bold">
-              {totalScore >= 20000
-                ? 'Campus Legend 🏆'
-                : totalScore >= 15000
-                ? 'Pro Navigator ⚡'
-                : 'Campus Explorer 🧭'}
-            </span>
-          </div>
+          {stats ? (
+            <div className="mt-1 sm:mt-2 flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-[11px] sm:text-xs font-bold text-amber-300 shadow-sm">
+                <Trophy className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>Rank #{stats.rank} of {stats.totalPlayers} Players</span>
+                <span className="text-amber-500/50">•</span>
+                <span className="text-emerald-400 font-extrabold">Top {stats.topPercentage}%</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-medium">
+                {stats.tierName || (totalScore >= 20000 ? 'Campus Legend 🏆' : totalScore >= 15000 ? 'Pro Navigator ⚡' : 'Campus Explorer 🧭')}
+              </span>
+            </div>
+          ) : (
+            <div className="mt-1 sm:mt-2 flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] sm:text-xs font-semibold text-slate-300">
+              <span>5 ROUNDS</span>
+              <span className="text-slate-600">•</span>
+              <span className="text-amber-400 font-bold">
+                {totalScore >= 20000
+                  ? 'Campus Legend 🏆'
+                  : totalScore >= 15000
+                  ? 'Pro Navigator ⚡'
+                  : 'Campus Explorer 🧭'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* 5-Rounds Breakdown */}
@@ -167,6 +213,7 @@ export default function FinalResultView({
         onClose={() => setIsShareModalOpen(false)}
         totalScore={totalScore}
         rounds={rounds}
+        rankStats={stats}
       />
     </div>
   );
