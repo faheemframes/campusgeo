@@ -7,6 +7,7 @@ import ApiKeyModal from './ApiKeyModal';
 
 interface PanoramaViewerProps {
   panoId: string;
+  imageUrl?: string;
   areaHint?: string;
   roundNumber: number;
   totalRounds: number;
@@ -15,6 +16,7 @@ interface PanoramaViewerProps {
 
 export default function PanoramaViewer({
   panoId,
+  imageUrl,
   areaHint,
   roundNumber,
   totalRounds,
@@ -46,6 +48,7 @@ export default function PanoramaViewer({
     provider
       .init(container, {
         panoId,
+        imageUrl,
         initialHeading: 0,
         initialPitch: 0,
         initialZoom: 1,

@@ -10,6 +10,7 @@ import FinalResultView from '@/components/FinalResultView';
 interface RoundInfo {
   roundNumber: number;
   panoId: string;
+  imageUrl?: string;
   area: string;
   difficulty: string;
 }
@@ -19,6 +20,7 @@ interface CompletedRound {
   score: number;
   distanceMeters: number;
   locationName: string;
+  imageUrl?: string;
   actualLatitude: number;
   actualLongitude: number;
   guessLatitude: number;
@@ -57,6 +59,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
       setRoundInfo({
         roundNumber: data.roundNumber,
         panoId: data.panoId,
+        imageUrl: data.imageUrl,
         area: data.area,
         difficulty: data.difficulty,
       });
@@ -99,6 +102,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
         score: data.score,
         distanceMeters: data.distanceMeters,
         locationName: data.locationName,
+        imageUrl: data.imageUrl || roundInfo?.imageUrl,
         actualLatitude: data.actualLatitude,
         actualLongitude: data.actualLongitude,
         guessLatitude: guessLat,
@@ -171,6 +175,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
         <PanoramaViewer
           key={`pano-${roundInfo.panoId}`}
           panoId={roundInfo.panoId}
+          imageUrl={roundInfo.imageUrl}
           areaHint={roundInfo.area}
           roundNumber={currentRoundNumber}
           totalRounds={totalRounds}
@@ -198,6 +203,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
           guessLatitude={activeResult.guessLatitude}
           guessLongitude={activeResult.guessLongitude}
           locationName={activeResult.locationName}
+          imageUrl={activeResult.imageUrl}
           isGameOver={isGameOver}
           onNext={handleNextRound}
         />

@@ -43,6 +43,7 @@ export async function GET(
       roundNumber,
       totalRounds: 5,
       panoId: round.location.panoId,
+      imageUrl: round.location.imageUrl,
       area: round.location.area,
       difficulty: round.location.difficulty,
       alreadyGuessed: round.guessLatitude !== null,

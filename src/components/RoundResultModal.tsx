@@ -15,6 +15,7 @@ interface RoundResultModalProps {
   guessLatitude: number;
   guessLongitude: number;
   locationName: string;
+  imageUrl?: string;
   isGameOver: boolean;
   onNext: () => void;
 }
@@ -29,6 +30,7 @@ export default function RoundResultModal({
   guessLatitude,
   guessLongitude,
   locationName,
+  imageUrl,
   isGameOver,
   onNext,
 }: RoundResultModalProps) {
@@ -192,8 +194,16 @@ export default function RoundResultModal({
               YOUR GUESS
           */}
           <div className="bg-slate-950/60 rounded-2xl p-3.5 border border-slate-800 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-emerald-500 border border-emerald-300" />
+            <div className="flex items-center gap-2.5">
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={locationName}
+                  className="w-12 h-12 rounded-xl object-cover border border-slate-700 shadow-md flex-shrink-0"
+                />
+              ) : (
+                <div className="w-3 h-3 rounded-full bg-emerald-500 border border-emerald-300" />
+              )}
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-bold text-slate-400">Actual Location</span>
                 <span className="text-slate-200 font-medium line-clamp-1">{locationName}</span>

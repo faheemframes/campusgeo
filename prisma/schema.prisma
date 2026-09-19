@@ -14,6 +14,7 @@ model Location {
   panoId     String
   name       String
   area       String
+  imageUrl   String?
   difficulty String   @default("medium")
   active     Boolean  @default(true)
   createdAt  DateTime @default(now())

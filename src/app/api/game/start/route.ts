@@ -51,6 +51,7 @@ export async function POST() {
       roundInfo: {
         roundNumber: 1,
         panoId: firstRound.location.panoId,
+        imageUrl: firstRound.location.imageUrl,
         area: firstRound.location.area,
         difficulty: firstRound.location.difficulty,
       },

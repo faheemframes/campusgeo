@@ -17,9 +17,12 @@ export class Fallback360Provider implements StreetViewProvider {
 
   private offscreenPanoCanvas: HTMLCanvasElement | null = null;
 
+  private currentImageUrl: string | null = null;
+
   async init(container: HTMLElement, options: PanoramaOptions): Promise<void> {
     this.container = container;
     this.currentPanoId = options.panoId;
+    this.currentImageUrl = options.imageUrl || null;
     this.yaw = options.initialHeading ?? 0;
     this.pitch = options.initialPitch ?? 0;
 
@@ -35,32 +38,48 @@ export class Fallback360Provider implements StreetViewProvider {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
-    this.loadPanoramaTexture(this.currentPanoId);
+    this.loadPanoramaTexture(this.currentPanoId, this.currentImageUrl || undefined);
     this.bindEvents();
     this.startRenderLoop();
 
     options.onReady?.();
   }
 
-  private loadPanoramaTexture(panoId: string): void {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = `/panoramas/${panoId}.jpg`;
+  private loadPanoramaTexture(panoId: string, customUrl?: string): void {
+    const candidates = [
+      customUrl,
+      `/images/locations/${panoId}.jpg`,
+      `/images/locations/${panoId}.png`,
+    ].filter(Boolean) as string[];
 
-    img.onload = () => {
-      const off = document.createElement('canvas');
-      off.width = img.naturalWidth || 2048;
-      off.height = img.naturalHeight || 1024;
-      const ctx = off.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, off.width, off.height);
-        this.offscreenPanoCanvas = off;
+    let idx = 0;
+    const tryNext = () => {
+      if (idx >= candidates.length) {
+        this.renderProceduralPanorama(panoId);
+        return;
       }
+      const src = candidates[idx++];
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = src;
+
+      img.onload = () => {
+        const off = document.createElement('canvas');
+        off.width = img.naturalWidth || 2048;
+        off.height = img.naturalHeight || 1024;
+        const ctx = off.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, off.width, off.height);
+          this.offscreenPanoCanvas = off;
+        }
+      };
+
+      img.onerror = () => {
+        tryNext();
+      };
     };
 
-    img.onerror = () => {
-      this.renderProceduralPanorama(panoId);
-    };
+    tryNext();
   }
 
   private renderProceduralPanorama(panoId: string): void {
