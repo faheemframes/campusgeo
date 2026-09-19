@@ -185,6 +185,8 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
       {/* Floating Guess Map (Bottom Right / Mobile Bottom Sheet) */}
       <div className="absolute bottom-4 right-4 z-30 pointer-events-auto">
         <GuessMap
+          key={`guess-map-round-${currentRoundNumber}`}
+          roundNumber={currentRoundNumber}
           onLockGuess={handleLockGuess}
           isSubmitting={isSubmittingGuess}
           disabled={activeResult !== null}

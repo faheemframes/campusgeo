@@ -3,12 +3,13 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const locations = [
+  // ROUND 1 - EASY (Iconic Wide Angle)
   {
     id: 'loc_tp_ganesan_auditorium',
     name: 'Dr. T.P. Ganesan Auditorium',
     latitude: 12.821340,
     longitude: 80.038410,
-    panoId: 'CAoSLEFGMVFpcE9hREp1TXk4Q1E0ektrTG1xYmV5X2w4Q0J4Y2xicFZZVUR0TVZF',
+    panoId: 'tp_auditorium_wide',
     imageUrl: '/images/locations/loc_tp_ganesan_auditorium.jpg',
     area: 'South Campus',
     difficulty: 'easy',
@@ -16,13 +17,37 @@ const locations = [
   },
   {
     id: 'loc_tech_park',
-    name: 'Tech Park (TP) IT & CSE Block',
+    name: 'Tech Park (TP) IT Tower',
     latitude: 12.824705,
     longitude: 80.045230,
-    panoId: 'CAoSLEFGMVFpcE5yNVp3enU2dWlzM1h4SGcxNmY3VkhocW1pZVRfNmV5R01yZ0FF',
+    panoId: 'tech_park_wide',
     imageUrl: '/images/locations/loc_tech_park.jpg',
     area: 'Main Campus',
     difficulty: 'easy',
+    active: true,
+  },
+
+  // ROUND 2 & 3 - MEDIUM (Campus Blocks & Recent 2024-2026 Photos)
+  {
+    id: 'loc_academic_block_new',
+    name: 'SRM Academic Block (2026 View)',
+    latitude: 12.823612,
+    longitude: 80.044521,
+    panoId: 'academic_block_2026',
+    imageUrl: '/images/locations/loc_academic_block_new.jpg',
+    area: 'Main Campus',
+    difficulty: 'medium',
+    active: true,
+  },
+  {
+    id: 'loc_old_campus',
+    name: 'Old Engineering Campus Wing (Aug 2024)',
+    latitude: 12.823850,
+    longitude: 80.042810,
+    panoId: 'old_campus_aug2024',
+    imageUrl: '/images/locations/loc_old_campus.jpg',
+    area: 'Main Campus',
+    difficulty: 'medium',
     active: true,
   },
   {
@@ -30,43 +55,10 @@ const locations = [
     name: 'Java Green & Clock Tower',
     latitude: 12.823120,
     longitude: 80.043810,
-    panoId: 'CAoSLEFGMVFpcE1hclBvWWlfRFoxTGh6WkRFT3B0aE51UW80UGR2dWd2N2k0TGxI',
+    panoId: 'clock_tower_java',
     imageUrl: '/images/locations/loc_java_green_clock_tower.jpg',
     area: 'Main Campus',
-    difficulty: 'easy',
-    active: true,
-  },
-  {
-    id: 'loc_potheri_railway_bridge',
-    name: 'Potheri Railway Station Footbridge',
-    latitude: 12.825634,
-    longitude: 80.039845,
-    panoId: 'CAoSLEFGMVFpcE5FTmR3NkptYy1aTGtDOW0ycnhnTXFjRGF3VWxQZzFYWjBvaW9r',
-    imageUrl: '/images/locations/loc_potheri_railway_bridge.jpg',
-    area: 'Potheri',
     difficulty: 'medium',
-    active: true,
-  },
-  {
-    id: 'loc_bio_engineering_block',
-    name: 'School of Bioengineering Block',
-    latitude: 12.822530,
-    longitude: 80.045120,
-    panoId: 'CAoSLEFGMVFpcE1rMGVfTFpVTzZkcnFPT29oUW5nU0FqV0FscV9vUktlcVl4N2s4',
-    imageUrl: '/images/locations/loc_bio_engineering_block.jpg',
-    area: 'Main Campus',
-    difficulty: 'medium',
-    active: true,
-  },
-  {
-    id: 'loc_old_campus',
-    name: 'Old Engineering Campus Block',
-    latitude: 12.823850,
-    longitude: 80.042810,
-    panoId: 'CAoSLEFGMVFpcE1KRHZqQWJpblhZTk5jYkJlQkxvd3lFTFcxY0p1ekNuQ3hGOW80',
-    imageUrl: '/images/locations/loc_old_campus.jpg',
-    area: 'Main Campus',
-    difficulty: 'easy',
     active: true,
   },
   {
@@ -74,27 +66,65 @@ const locations = [
     name: 'SRM Central Avenue Walkway',
     latitude: 12.824120,
     longitude: 80.044120,
-    panoId: 'CAoSLEFGMVFpcE1hV3B6TzQ0X3J4cTRvRUR3Wl90U1F1MjhjZ2V5TjJ1QzFEV1dJ',
+    panoId: 'campus_walkway_avenue',
     imageUrl: '/images/locations/loc_campus_walkway.jpg',
     area: 'Main Campus',
     difficulty: 'medium',
     active: true,
   },
+
+  // ROUND 4 & 5 - HARD (Zoomed-in Detail / Architectural Clues)
   {
-    id: 'loc_ub_front',
-    name: 'University Building (UB) Front',
-    latitude: 12.823612,
-    longitude: 80.044521,
-    panoId: 'CAoSLEFGMVFpcE1sOGF0WHd0eW0yS1pqSGt0VG13WldGWWZwVWRjVGZqS2d2U0lo',
-    imageUrl: '/images/locations/loc_ub_front.jpg',
+    id: 'loc_bio_engineering_block',
+    name: 'School of Bioengineering Entrance',
+    latitude: 12.822530,
+    longitude: 80.045120,
+    panoId: 'bio_engineering_block',
+    imageUrl: '/images/locations/loc_bio_engineering_block.jpg',
     area: 'Main Campus',
-    difficulty: 'easy',
+    difficulty: 'hard',
     active: true,
   },
+  {
+    id: 'loc_potheri_zoom',
+    name: 'Potheri Station Overpass (Zoomed Detail)',
+    latitude: 12.825634,
+    longitude: 80.039845,
+    panoId: 'potheri_zoom',
+    imageUrl: '/images/locations/loc_potheri_zoom.jpg',
+    area: 'Potheri',
+    difficulty: 'hard',
+    active: true,
+  },
+  {
+    id: 'loc_tech_park_zoom',
+    name: 'Tech Park Entrance Pillars (Zoomed Detail)',
+    latitude: 12.824705,
+    longitude: 80.045230,
+    panoId: 'tech_park_zoom',
+    imageUrl: '/images/locations/loc_tech_park_zoom.jpg',
+    area: 'Main Campus',
+    difficulty: 'hard',
+    active: true,
+  },
+  {
+    id: 'loc_auditorium_dome_zoom',
+    name: 'Auditorium Curved Dome Facade (Zoomed Detail)',
+    latitude: 12.821340,
+    longitude: 80.038410,
+    panoId: 'auditorium_dome_zoom',
+    imageUrl: '/images/locations/loc_auditorium_dome_zoom.jpg',
+    area: 'South Campus',
+    difficulty: 'hard',
+    active: true,
+  }
 ];
 
 async function main() {
-  console.log('Seeding real SRM KTR campus photos into database...');
+  console.log('Seeding progressive difficulty locations with real photos...');
+  // Clear non-current locations so only verified real photos are active
+  await prisma.location.updateMany({ data: { active: false } });
+
   for (const loc of locations) {
     await prisma.location.upsert({
       where: { id: loc.id },
@@ -102,8 +132,8 @@ async function main() {
       create: loc,
     });
   }
-  const count = await prisma.location.count();
-  console.log(`Successfully seeded ${count} locations with real SRM photos!`);
+  const count = await prisma.location.count({ where: { active: true } });
+  console.log(`Successfully seeded ${count} active locations across Easy, Medium, and Hard difficulty!`);
 }
 
 main()

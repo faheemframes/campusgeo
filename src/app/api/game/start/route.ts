@@ -15,9 +15,26 @@ export async function POST() {
       );
     }
 
-    // 2. Fisher-Yates shuffle to pick 5 unique locations
-    const shuffled = [...allLocations].sort(() => 0.5 - Math.random());
-    const selectedLocations = shuffled.slice(0, 5);
+    // 2. Select 5 unique locations with escalating round difficulty
+    const easy = allLocations.filter((l) => l.difficulty === 'easy').sort(() => 0.5 - Math.random());
+    const medium = allLocations.filter((l) => l.difficulty === 'medium').sort(() => 0.5 - Math.random());
+    const hard = allLocations.filter((l) => l.difficulty === 'hard').sort(() => 0.5 - Math.random());
+
+    const chosen = new Set<string>();
+    const pickOne = (pool: typeof allLocations): (typeof allLocations)[0] => {
+      const available = pool.filter((l) => !chosen.has(l.id));
+      const picked = available.length > 0 ? available[0] : allLocations.filter((l) => !chosen.has(l.id))[0];
+      chosen.add(picked.id);
+      return picked;
+    };
+
+    const selectedLocations = [
+      pickOne(easy),           // Round 1: Easy (iconic wide view)
+      pickOne([...easy, ...medium]), // Round 2: Easy-Medium
+      pickOne(medium),         // Round 3: Medium (recent campus photo)
+      pickOne([...medium, ...hard]), // Round 4: Medium-Hard
+      pickOne(hard),           // Round 5: Hard (zoomed-in crop!)
+    ];
 
     // 3. Create Game session
     const game = await prisma.game.create({

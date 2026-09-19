@@ -7,7 +7,7 @@
 
 const MAX_ROUND_SCORE = 5000;
 const MAX_GAME_SCORE = 25000;
-const SCORING_SCALE_KM = 0.4; // Calibrated for campus geographic scale
+const SCORING_SCALE_KM = 0.12; // Strict campus scale: 50m loses ~1700 pts, 200m loses ~4000 pts
 
 /**
  * Calculates great-circle distance between two points using the Haversine formula.
