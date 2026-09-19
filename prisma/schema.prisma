@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Location {
+  id         String   @id @default(cuid())
+  latitude   Float
+  longitude  Float
+  panoId     String
+  name       String
+  area       String
+  difficulty String   @default("medium")
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  rounds     Round[]
+}
+
+model Game {
+  id         String   @id @default(cuid())
+  totalScore Int      @default(0)
+  isFinished Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  rounds     Round[]
+}
+
+model Round {
+  id             String    @id @default(cuid())
+  gameId         String
+  locationId     String
+  roundNumber    Int
+  guessLatitude  Float?
+  guessLongitude Float?
+  distanceMeters Float?
+  score          Int?
+  createdAt      DateTime  @default(now())
+
+  game     Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id])
+
+  @@unique([gameId, roundNumber])
+}
