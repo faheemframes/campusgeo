@@ -36,7 +36,7 @@ export default function GuessMap({
 
   const [guessCoord, setGuessCoord] = useState<{ lat: number; lng: number } | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [isSatellite, setIsSatellite] = useState<boolean>(true); // Default to Satellite!
+  const [mapMode, setMapMode] = useState<'hybrid' | 'satellite' | 'street'>('hybrid');
 
   // Initialize Map once on mount
   useEffect(() => {
@@ -59,14 +59,32 @@ export default function GuessMap({
         center: [SRM_CENTER_LAT, SRM_CENTER_LNG],
         zoom: DEFAULT_ZOOM,
         minZoom: 14,
-        maxZoom: 19,
+        maxZoom: 20,
         maxBounds: bounds,
         maxBoundsViscosity: 0.8,
         zoomControl: false,
         attributionControl: false,
       });
 
-      // Standard OpenStreetMap tiles
+      // 1. Latest Google Hybrid Satellite (High-Res 2024-2026 aerial + road & building labels)
+      const hybridLayer = L.tileLayer(
+        'https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+        {
+          maxZoom: 20,
+          subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        }
+      );
+
+      // 2. Latest Google Pure Satellite (Clean photo aerial view without labels)
+      const pureSatLayer = L.tileLayer(
+        'https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+        {
+          maxZoom: 20,
+          subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        }
+      );
+
+      // 3. OpenStreetMap (Vector road & campus pathways)
       const streetLayer = L.tileLayer(
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
@@ -75,23 +93,16 @@ export default function GuessMap({
         }
       );
 
-      // High-resolution Satellite Imagery
-      const satelliteLayer = L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        {
-          maxZoom: 19,
-        }
-      );
-
-      // Default to Satellite View
-      satelliteLayer.addTo(map);
+      // Default: Latest Google Hybrid
+      hybridLayer.addTo(map);
 
       // Top right zoom control
       L.control.zoom({ position: 'topright' }).addTo(map);
 
       mapInstanceRef.current = map;
+      (map as any)._hybridLayer = hybridLayer;
+      (map as any)._pureSatLayer = pureSatLayer;
       (map as any)._streetLayer = streetLayer;
-      (map as any)._satelliteLayer = satelliteLayer;
 
       // Click to drop or move guess marker directly
       map.on('click', (e: LType.LeafletMouseEvent) => {
@@ -181,14 +192,20 @@ export default function GuessMap({
   const handleToggleLayer = () => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current as any;
-    if (isSatellite) {
-      if (map._satelliteLayer) map.removeLayer(map._satelliteLayer);
+    
+    // Cycle: hybrid (Google Satellite + Labels) -> street (OpenStreetMap) -> satellite (Google Pure Satellite) -> hybrid
+    if (mapMode === 'hybrid') {
+      if (map._hybridLayer) map.removeLayer(map._hybridLayer);
       if (map._streetLayer) map.addLayer(map._streetLayer);
-      setIsSatellite(false);
-    } else {
+      setMapMode('street');
+    } else if (mapMode === 'street') {
       if (map._streetLayer) map.removeLayer(map._streetLayer);
-      if (map._satelliteLayer) map.addLayer(map._satelliteLayer);
-      setIsSatellite(true);
+      if (map._pureSatLayer) map.addLayer(map._pureSatLayer);
+      setMapMode('satellite');
+    } else {
+      if (map._pureSatLayer) map.removeLayer(map._pureSatLayer);
+      if (map._hybridLayer) map.addLayer(map._hybridLayer);
+      setMapMode('hybrid');
     }
   };
 
@@ -240,15 +257,30 @@ export default function GuessMap({
       <div className={`absolute top-2 ${isMobileMode ? 'right-2' : 'right-12'} z-[500] flex items-center gap-1`}>
         <button
           onClick={handleToggleLayer}
-          title={isSatellite ? 'Switch to Street Map' : 'Switch to Satellite'}
-          aria-label={isSatellite ? 'Switch to Street Map' : 'Switch to Satellite'}
-          className={`p-2 rounded-full backdrop-blur-md border border-slate-700/60 transition min-w-[32px] min-h-[32px] flex items-center justify-center ${
-            isSatellite
-              ? 'bg-amber-500 text-slate-950 font-bold'
-              : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300'
+          title={
+            mapMode === 'hybrid'
+              ? 'Active: Latest Google Hybrid Satellite (with campus labels). Tap for Street Map.'
+              : mapMode === 'street'
+              ? 'Active: Street Map. Tap for Pure Satellite.'
+              : 'Active: Pure Satellite. Tap for Latest Google Hybrid Satellite.'
+          }
+          aria-label={
+            mapMode === 'hybrid'
+              ? 'Switch to Street Map'
+              : mapMode === 'street'
+              ? 'Switch to Pure Satellite'
+              : 'Switch to Google Hybrid Satellite'
+          }
+          className={`px-2 py-1 rounded-full backdrop-blur-md border border-slate-700/60 transition min-h-[32px] flex items-center gap-1 text-[11px] font-bold ${
+            mapMode === 'hybrid'
+              ? 'bg-amber-500 text-slate-950 shadow-md'
+              : mapMode === 'street'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-emerald-600 text-white shadow-md'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
+          <span>{mapMode === 'hybrid' ? 'Satellite+' : mapMode === 'street' ? 'Street' : 'Satellite'}</span>
         </button>
         <button
           onClick={handleCenterCampus}
