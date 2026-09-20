@@ -68,4 +68,107 @@ export function formatDistance(distanceMeters: number): string {
   return `${(distanceMeters / 1000).toFixed(1)} km`;
 }
 
+export interface ScoreTierInfo {
+  color: string;       // Hex color for HTML5 Canvas (e.g. #ef4444)
+  textColor: string;   // Tailwind text class
+  bgColor: string;     // Tailwind background class
+  borderColor: string; // Tailwind border class
+  glowColor: string;   // Shadow / glow color
+  label: string;       // Badge text
+}
+
+/**
+ * Returns dynamic color grading and descriptive badge based on round score (out of 5,000 pts).
+ * - Red for bad / 0 scores
+ * - Orange for okay scores
+ * - Yellow for good scores
+ * - Emerald green for spot-on / bullseye scores
+ */
+export function getRoundScoreTier(score: number): ScoreTierInfo {
+  if (score >= 4500) {
+    return {
+      color: '#10b981', // emerald-500
+      textColor: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/10',
+      borderColor: 'border-emerald-500/40',
+      glowColor: 'shadow-emerald-500/20',
+      label: 'Bullseye! 🎯',
+    };
+  }
+  if (score >= 3000) {
+    return {
+      color: '#facc15', // yellow-400
+      textColor: 'text-yellow-400',
+      bgColor: 'bg-yellow-500/10',
+      borderColor: 'border-yellow-500/40',
+      glowColor: 'shadow-yellow-500/20',
+      label: 'Great Guess! ⚡',
+    };
+  }
+  if (score >= 1000) {
+    return {
+      color: '#fb923c', // orange-400
+      textColor: 'text-orange-400',
+      bgColor: 'bg-orange-500/10',
+      borderColor: 'border-orange-500/40',
+      glowColor: 'shadow-orange-500/20',
+      label: 'Getting Warmer 🧭',
+    };
+  }
+  // Bad score (0 to 999 pts) -> Red!
+  return {
+    color: '#ef4444', // red-500
+    textColor: 'text-red-400',
+    bgColor: 'bg-red-500/10',
+    borderColor: 'border-red-500/40',
+    glowColor: 'shadow-red-500/20',
+    label: score === 0 ? 'Lost in Campus! 💀' : 'Way Off 📍',
+  };
+}
+
+/**
+ * Returns dynamic color grading and descriptive title based on total game score (out of 25,000 pts).
+ */
+export function getTotalScoreTier(totalScore: number): ScoreTierInfo {
+  if (totalScore >= 22000) {
+    return {
+      color: '#10b981',
+      textColor: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/15',
+      borderColor: 'border-emerald-500/40',
+      glowColor: 'shadow-emerald-500/30',
+      label: 'Campus Legend 🏆',
+    };
+  }
+  if (totalScore >= 15000) {
+    return {
+      color: '#facc15',
+      textColor: 'text-yellow-400',
+      bgColor: 'bg-yellow-500/15',
+      borderColor: 'border-yellow-500/40',
+      glowColor: 'shadow-yellow-500/30',
+      label: 'Pro Navigator ⚡',
+    };
+  }
+  if (totalScore >= 7500) {
+    return {
+      color: '#fb923c',
+      textColor: 'text-orange-400',
+      bgColor: 'bg-orange-500/15',
+      borderColor: 'border-orange-500/40',
+      glowColor: 'shadow-orange-500/30',
+      label: 'Campus Explorer 🧭',
+    };
+  }
+  // < 7500 pts -> Red!
+  return {
+    color: '#ef4444',
+    textColor: 'text-red-400',
+    bgColor: 'bg-red-500/15',
+    borderColor: 'border-red-500/40',
+    glowColor: 'shadow-red-500/30',
+    label: 'Lost Fresher 🎒',
+  };
+}
+
 export { MAX_ROUND_SCORE, MAX_GAME_SCORE };

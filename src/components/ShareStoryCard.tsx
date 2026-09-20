@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Share2, Download, Copy, Check, X, Sparkles } from 'lucide-react';
-import { formatDistance } from '@/lib/scoring';
+import { formatDistance, getRoundScoreTier, getTotalScoreTier } from '@/lib/scoring';
 
 interface ShareRound {
   roundNumber: number;
@@ -112,24 +112,16 @@ export default function ShareStoryCard({
     ctx.letterSpacing = '-2px';
     ctx.fillText(totalScore.toLocaleString(), width / 2, 690);
 
+    const totalTierInfo = getTotalScoreTier(totalScore);
+
     // Score Denominator
-    ctx.fillStyle = '#f59e0b';
+    ctx.fillStyle = totalTierInfo.color;
     ctx.font = '800 48px -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.fillText(`/ ${maxScore.toLocaleString()}`, width / 2, 770);
 
     // Tier badge
-    let tier = 'CAMPUS ROOKIE';
-    let tierColor = '#94a3b8';
-    if (totalScore >= 22000) {
-      tier = '🏆 CAMPUS LEGEND';
-      tierColor = '#fbbf24';
-    } else if (totalScore >= 18000) {
-      tier = '⚡ PRO NAVIGATOR';
-      tierColor = '#38bdf8';
-    } else if (totalScore >= 12000) {
-      tier = '🧭 CAMPUS EXPLORER';
-      tierColor = '#34d399';
-    }
+    const tier = totalTierInfo.label.toUpperCase();
+    const tierColor = totalTierInfo.color;
 
     // Pill badge background
     const pillW = 420;
@@ -140,7 +132,8 @@ export default function ShareStoryCard({
     ctx.beginPath();
     ctx.roundRect(pillX, pillY, pillW, pillH, 35);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.strokeStyle = totalTierInfo.color;
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     ctx.fillStyle = tierColor;
@@ -208,8 +201,9 @@ export default function ShareStoryCard({
       ctx.fillText(text, boxX + 110, ry + 8);
 
       // Score & Distance on Right
+      const roundTierInfo = getRoundScoreTier(round.score);
       ctx.textAlign = 'right';
-      ctx.fillStyle = '#f59e0b';
+      ctx.fillStyle = roundTierInfo.color;
       ctx.font = '800 28px -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.fillText(`${round.score.toLocaleString()} pts`, boxX + boxW - 40, ry);
 

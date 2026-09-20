@@ -2,7 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { createStreetViewProvider, StreetViewProvider } from '@/lib/streetview/provider';
-import { Compass, RotateCw, ZoomIn, ZoomOut, AlertCircle } from 'lucide-react';
+import { Compass, RotateCw, ZoomIn, ZoomOut, AlertCircle, HelpCircle } from 'lucide-react';
+import HowToPlayModal from '@/components/HowToPlayModal';
 
 interface PanoramaViewerProps {
   panoId: string;
@@ -27,6 +28,7 @@ export default function PanoramaViewer({
   const providerRef = useRef<StreetViewProvider | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -151,8 +153,17 @@ export default function PanoramaViewer({
         )}
       </div>
 
-      {/* Top Right Controls: Zoom In / Zoom Out / Reset View */}
+      {/* Top Right Controls: How to Play / Zoom In / Zoom Out / Reset View */}
       <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5">
+        <button
+          onClick={() => setShowHelp(true)}
+          title="How to Play"
+          aria-label="How to Play"
+          className="p-2 px-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-amber-400 hover:text-amber-300 border border-slate-700/60 backdrop-blur-md transition active:scale-95 min-h-[36px] flex items-center justify-center gap-1.5 text-xs font-bold shadow-lg"
+        >
+          <HelpCircle className="w-4 h-4" />
+          <span className="hidden sm:inline">Rules</span>
+        </button>
         <button
           onClick={handleZoomIn}
           title="Zoom In"
@@ -186,6 +197,12 @@ export default function PanoramaViewer({
           <span>{loadError}</span>
         </div>
       )}
+
+      {/* In-Game How to Play Dialog */}
+      <HowToPlayModal
+        isOpen={showHelp}
+        onClose={() => setShowHelp(false)}
+      />
     </div>
   );
 }

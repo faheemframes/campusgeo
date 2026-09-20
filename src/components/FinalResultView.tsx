@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Share2, RotateCcw, Trophy, MapPin, Sparkles, Navigation, Camera } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import ShareStoryCard from './ShareStoryCard';
-import { formatDistance } from '@/lib/scoring';
+import { formatDistance, getRoundScoreTier, getTotalScoreTier } from '@/lib/scoring';
 
 interface FinalRound {
   roundNumber: number;
@@ -102,7 +102,7 @@ export default function FinalResultView({
           </span>
 
           <div className="flex items-baseline justify-center gap-1.5 mt-0.5 sm:mt-1">
-            <span className="text-4xl sm:text-6xl font-black font-mono tracking-tight text-white drop-shadow-sm">
+            <span className={`text-4xl sm:text-6xl font-black font-mono tracking-tight drop-shadow-sm ${getTotalScoreTier(totalScore).textColor}`}>
               {totalScore.toLocaleString()}
             </span>
             <span className="text-sm sm:text-xl font-bold font-mono text-slate-400">
@@ -119,19 +119,15 @@ export default function FinalResultView({
                 <span className="text-emerald-400 font-extrabold">Top {stats.topPercentage}%</span>
               </div>
               <span className="text-[10px] text-slate-400 font-medium">
-                {stats.tierName || (totalScore >= 20000 ? 'Campus Legend 🏆' : totalScore >= 15000 ? 'Pro Navigator ⚡' : 'Campus Explorer 🧭')}
+                {stats.tierName || getTotalScoreTier(totalScore).label}
               </span>
             </div>
           ) : (
             <div className="mt-1 sm:mt-2 flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] sm:text-xs font-semibold text-slate-300">
               <span>5 ROUNDS</span>
               <span className="text-slate-600">•</span>
-              <span className="text-amber-400 font-bold">
-                {totalScore >= 20000
-                  ? 'Campus Legend 🏆'
-                  : totalScore >= 15000
-                  ? 'Pro Navigator ⚡'
-                  : 'Campus Explorer 🧭'}
+              <span className={`font-bold ${getTotalScoreTier(totalScore).textColor}`}>
+                {getTotalScoreTier(totalScore).label}
               </span>
             </div>
           )}
@@ -144,34 +140,37 @@ export default function FinalResultView({
             <span>Score</span>
           </div>
 
-          {rounds.map((round) => (
-            <div
-              key={round.roundNumber}
-              className="w-full bg-slate-950/60 border border-white/[0.06] rounded-xl px-2.5 py-1.5 sm:py-2 flex items-center justify-between hover:border-white/[0.12] transition"
-            >
-              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 pr-2">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] sm:text-xs font-bold font-mono text-slate-300 shrink-0">
-                  {round.roundNumber}
+          {rounds.map((round) => {
+            const rTier = getRoundScoreTier(round.score);
+            return (
+              <div
+                key={round.roundNumber}
+                className={`w-full bg-slate-950/60 border ${rTier.borderColor} rounded-xl px-2.5 py-1.5 sm:py-2 flex items-center justify-between hover:border-white/[0.18] transition`}
+              >
+                <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 pr-2">
+                  <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] sm:text-xs font-bold font-mono ${rTier.textColor} shrink-0`}>
+                    {round.roundNumber}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-semibold text-slate-200 truncate">
+                      {round.locationName}
+                    </span>
+                    <span className="text-[10px] text-slate-400 flex items-center gap-1 font-mono">
+                      <Navigation className="w-2.5 h-2.5 text-blue-400 shrink-0" />
+                      {formatDistance(round.distanceMeters)} off
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-semibold text-slate-200 truncate">
-                    {round.locationName}
-                  </span>
-                  <span className="text-[10px] text-slate-400 flex items-center gap-1 font-mono">
-                    <Navigation className="w-2.5 h-2.5 text-blue-400 shrink-0" />
-                    {formatDistance(round.distanceMeters)} off
-                  </span>
-                </div>
-              </div>
 
-              <div className="flex flex-col items-end shrink-0">
-                <span className="text-xs sm:text-sm font-bold text-amber-400 font-mono">
-                  {round.score.toLocaleString()}
-                </span>
-                <span className="text-[9px] text-slate-500 font-mono">/ 5,000</span>
+                <div className="flex flex-col items-end shrink-0">
+                  <span className={`text-xs sm:text-sm font-bold font-mono ${rTier.textColor}`}>
+                    {round.score.toLocaleString()}
+                  </span>
+                  <span className="text-[9px] text-slate-500 font-mono">/ 5,000</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Action CTAs */}

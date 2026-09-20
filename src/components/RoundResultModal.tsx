@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { ArrowRight, Trophy, MapPin, Navigation } from 'lucide-react';
-import { formatDistance } from '@/lib/scoring';
+import { formatDistance, getRoundScoreTier } from '@/lib/scoring';
 import type * as LType from 'leaflet';
 
 interface RoundResultModalProps {
@@ -181,18 +181,41 @@ export default function RoundResultModal({
             </div>
 
             {/* Score Card */}
-            <div className="bg-slate-950/60 border border-white/[0.06] rounded-xl p-2.5 sm:p-3.5 flex flex-col">
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-0.5">
-                <Trophy className="w-3 h-3 text-amber-400 shrink-0" /> Round Score
-              </span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl sm:text-2xl font-black font-mono text-amber-400">
-                  {score.toLocaleString()}
-                </span>
-                <span className="text-[10px] text-slate-500 font-mono">/ 5k</span>
-              </div>
-              <span className="text-[10px] text-slate-500 mt-0.5 font-mono">points awarded</span>
-            </div>
+            {(() => {
+              const scoreTier = getRoundScoreTier(score);
+              return (
+                <div className={`bg-slate-950/60 border ${scoreTier.borderColor} ${scoreTier.bgColor} rounded-xl p-2.5 sm:p-3.5 flex flex-col transition-all shadow-md ${scoreTier.glowColor}`}>
+                  <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-0.5">
+                    <Trophy className={`w-3 h-3 ${scoreTier.textColor} shrink-0`} /> Round Score
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className={`text-xl sm:text-2xl font-black font-mono ${scoreTier.textColor}`}>
+                      {score.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">/ 5k</span>
+                  </div>
+                  <span className={`text-[10px] mt-0.5 font-mono font-bold ${scoreTier.textColor}`}>
+                    {scoreTier.label}
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Proximity Score Meter */}
+          <div className="w-full bg-slate-950/80 rounded-full h-1.5 overflow-hidden border border-white/[0.06]">
+            <div
+              className={`h-full transition-all duration-500 ${
+                score >= 4500
+                  ? 'bg-emerald-400'
+                  : score >= 3000
+                  ? 'bg-yellow-400'
+                  : score >= 1000
+                  ? 'bg-orange-400'
+                  : 'bg-red-500'
+              }`}
+              style={{ width: `${Math.max(2, (score / 5000) * 100)}%` }}
+            />
           </div>
 
           {/* Location Summary Row */}
@@ -214,8 +237,10 @@ export default function RoundResultModal({
             </div>
 
             <div className="flex flex-col items-end shrink-0 pl-2">
-              <span className="text-[9px] uppercase font-bold text-slate-400">Accuracy</span>
-              <span className="text-amber-400 font-mono font-bold text-xs">{score > 4500 ? 'Bullseye! 🎯' : `${score} pts`}</span>
+              <span className="text-[9px] uppercase font-bold text-slate-400">Performance</span>
+              <span className={`font-mono font-bold text-xs ${getRoundScoreTier(score).textColor}`}>
+                {getRoundScoreTier(score).label}
+              </span>
             </div>
           </div>
 
