@@ -44,7 +44,25 @@ export function getLandmarkCluster(id: string, name: string): string {
     lower.includes('arcade')
   )
     return 'old_campus';
-  if (lower.includes('hostel') || lower.includes('paari') || lower.includes('oori'))
+  if (lower.includes('chola')) return 'chola_statue';
+  if (lower.includes('football') || lower.includes('sports arena') || lower.includes('sports_arena'))
+    return 'sports_arena';
+  if (lower.includes('temple')) return 'campus_temple';
+  if (lower.includes('hospital')) return 'medical_hospital';
+  if (lower.includes('dental')) return 'dental_college';
+  if (lower.includes('architecture')) return 'school_of_architecture';
+  if (lower.includes('law')) return 'school_of_law';
+  if (lower.includes('management')) return 'school_of_management';
+  if (lower.includes('cv_raman') || lower.includes('research park')) return 'research_park';
+  if (lower.includes('aerospace') || lower.includes('hangar')) return 'aerospace_hangar';
+  if (lower.includes('supermarket') || lower.includes('food court')) return 'supermarket';
+  if (
+    lower.includes('hostel') ||
+    lower.includes('paari') ||
+    lower.includes('oori') ||
+    lower.includes('kaari') ||
+    lower.includes('mandela')
+  )
     return 'hostel';
   if (
     lower.includes('walkway') ||
