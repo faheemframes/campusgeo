@@ -51,7 +51,7 @@ export default function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps)
             <div>
               <h3 className="font-bold text-slate-100 text-xs sm:text-sm">1. Look Around the Photo</h3>
               <p className="text-slate-400 text-xs mt-0.5">
-                Drag on the screen to rotate in full 360° or zoom in. Spot distinctive architecture, building colors, road catenaries, trees, or signboards.
+                Pan across the photo or zoom in. Spot distinctive architecture, building colors, road catenaries, trees, or signboards.
               </p>
             </div>
           </div>

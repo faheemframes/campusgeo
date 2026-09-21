@@ -85,11 +85,11 @@ export default function LandingPage() {
           </div>
         )}
 
-        {/* Primary CTA: PLAY 360° */}
+        {/* Primary CTA: PLAY GAME */}
         <button
           onClick={handleStartGame}
           disabled={isStarting}
-          aria-label={isStarting ? 'Starting game...' : 'Play 360 Campus Geo Game'}
+          aria-label={isStarting ? 'Starting game...' : 'Play Campus Geo Game'}
           className="mt-6 w-full py-3.5 sm:py-4 px-6 rounded-2xl font-black text-base sm:text-lg tracking-wider uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 group min-h-[48px]"
         >
           {isStarting ? (
@@ -100,7 +100,7 @@ export default function LandingPage() {
           ) : (
             <>
               <Play className="w-5 h-5 fill-slate-950 group-hover:translate-x-0.5 transition" />
-              <span>PLAY 360°</span>
+              <span>PLAY GAME</span>
             </>
           )}
         </button>
@@ -126,16 +126,16 @@ export default function LandingPage() {
           </button>
         </div>
 
-        {/* Secondary information */}
-        <p className="mt-3 text-xs sm:text-sm font-medium tracking-wide text-slate-300">
-          Explore. Guess. Lock it in.
+        {/* Secondary information / Tagline */}
+        <p className="mt-3 text-xs sm:text-sm font-semibold tracking-wide text-slate-300">
+          Guess & Explore
         </p>
 
         {/* Search Engine Crawlable Content (Rich Semantic Metadata for SRM Game / SRM GeoGuessr) */}
         <section className="sr-only" aria-label="About Campus Geo SRM GeoGuessr">
           <h2>Campus Geo — The Viral SRM KTR GeoGuessr Game</h2>
           <p>
-            Campus Geo is the premier SRM GeoGuessr and campus exploration game for SRM Institute of Science and Technology (SRMIST), Kattankulathur. Players test their campus knowledge across 5 rapid rounds of 360° street view panoramas and landmark photographs.
+            Campus Geo is the premier SRM GeoGuessr and campus exploration game for SRM Institute of Science and Technology (SRMIST), Kattankulathur. Players test their campus knowledge across 5 rapid rounds of campus photos, landmarks, and street scenes.
           </p>
           <h3>Iconic SRM Landmarks Featured:</h3>
           <ul>
@@ -150,7 +150,7 @@ export default function LandingPage() {
           </ul>
           <h3>How to Play SRM GeoGuessr:</h3>
           <p>
-            1. Examine the 360-degree interactive panorama or high-resolution campus photo. Look for architecture clues, signboards, building facades, and roads.
+            1. Examine the high-resolution campus photo or scene. Look for architecture clues, signboards, building facades, and roads.
             2. Pan and zoom across the high-resolution satellite guess map of SRM KTR.
             3. Pin your location guess and click "Lock Guess". Earn up to 5,000 points per round based on proximity calculated with high-precision Haversine math.
             4. Share your 9:16 story score card with friends on WhatsApp and Instagram!
@@ -161,7 +161,7 @@ export default function LandingPage() {
       {/* Footer Details */}
       <footer className="w-full max-w-md pb-2 flex flex-col items-center text-center gap-1 z-10 shrink-0">
         <div className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
-          5 quick rounds • 360° Panoramas • Shareable card
+          5 quick rounds • Campus Spots • Shareable card
         </div>
         <div className="text-[9px] sm:text-[10px] text-slate-400">
           Built for SRM Institute of Science and Technology, Kattankulathur

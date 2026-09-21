@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: '%s | Campus Geo — SRM GeoGuessr',
   },
   description:
-    'Test your SRM Institute of Science and Technology knowledge! Play the viral SRM GeoGuessr game featuring 360° panoramas and photo challenges across Tech Park, TP Ganesan Auditorium, Java Green, UB, Potheri & more. Guess locations, earn points, and share your score card.',
+    'Test your SRM Institute of Science and Technology knowledge! Play the viral SRM GeoGuessr game featuring campus photo challenges across Tech Park, TP Ganesan Auditorium, Java Green, UB, Potheri & more. Guess locations, earn points, and share your score card.',
   keywords: [
     'srm game',
     'srm geoguessr',
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     siteName: 'Campus Geo — SRM GeoGuessr',
     title: 'Campus Geo — The Viral SRM KTR GeoGuessr Game',
     description:
-      'Can you identify SRM KTR from a 360° street view or campus photo? Play 5 quick rounds, pinpoint your location on satellite maps, and challenge your friends!',
+      'Can you identify SRM KTR from campus photos? Play 5 quick rounds, pinpoint your location on satellite maps, and challenge your friends!',
     images: [
       {
         url: '/og-image.jpg',
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Campus Geo — SRM KTR GeoGuessr Game',
     description:
-      'How well do you know SRM? Explore 360° campus spots, guess your location, and challenge your friends!',
+      'How well do you know SRM? Guess campus spots, pinpoint your location, and challenge your friends!',
     images: ['/og-image.jpg'],
     creator: '@faheemframes',
   },
@@ -101,7 +101,7 @@ const jsonLd = {
   alternateName: ['SRM GeoGuessr', 'SRM Game', 'CampusGeo', 'SRMIST Game'],
   url: 'https://campusgeo.vercel.app',
   description:
-    'The premier SRM KTR GeoGuessr game. Explore 360° panoramic views across SRM Institute of Science and Technology campus, drop pins on high-res satellite maps, and compete with SRMites.',
+    'The premier SRM KTR GeoGuessr game. Explore campus views across SRM Institute of Science and Technology campus, drop pins on high-res satellite maps, and compete with SRMites.',
   applicationCategory: 'GameApplication',
   genre: ['Geography Game', 'Quiz', 'Trivia', 'Campus Exploration', 'Puzzle'],
   operatingSystem: 'All',
