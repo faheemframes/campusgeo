@@ -34,6 +34,7 @@ export default function ReportLocationModal({
   const [note, setNote] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [autoApplied, setAutoApplied] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -56,14 +57,16 @@ export default function ReportLocationModal({
           guessLongitude: suggestMyGuess && guessLongitude ? guessLongitude : null,
           reason,
           note,
+          autoUpdate: true,
         }),
       });
 
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || 'Failed to submit report');
       }
 
+      setAutoApplied(Boolean(data.autoApplied));
       setIsSuccess(true);
     } catch (err: any) {
       console.error(err);
@@ -75,6 +78,7 @@ export default function ReportLocationModal({
 
   const handleClose = () => {
     setIsSuccess(false);
+    setAutoApplied(false);
     setError(null);
     setNote('');
     onClose();
@@ -98,7 +102,7 @@ export default function ReportLocationModal({
               <h2 className="text-sm sm:text-base font-bold text-white">
                 Think our pin was wrong?
               </h2>
-              <p className="text-[10px] sm:text-xs text-slate-400">Help us verify & update it</p>
+              <p className="text-[10px] sm:text-xs text-slate-400">Lock in your pin & correct the map</p>
             </div>
           </div>
           <button
@@ -115,9 +119,19 @@ export default function ReportLocationModal({
             <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
               <Check className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <h3 className="text-base font-bold text-white">Report Submitted!</h3>
+            <h3 className="text-base font-bold text-white">
+              {autoApplied ? 'Location Corrected & Locked In! 🎯' : 'Feedback Submitted!'}
+            </h3>
             <p className="text-xs text-slate-300 max-w-xs leading-relaxed">
-              Thank you for helping keep SRM Campus Geo accurate! Our campus admins will review your suggestion and update the map coordinates.
+              {autoApplied ? (
+                <>
+                  Awesome! Your pinned coordinates have been <strong className="text-emerald-400">directly applied</strong> to the live database for <strong className="text-white">{locationName}</strong>. All future games will now use this corrected pin!
+                </>
+              ) : (
+                <>
+                  Thank you for helping keep SRM Campus Geo accurate! Your report and suggested spot details have been recorded.
+                </>
+              )}
             </p>
             <button
               onClick={handleClose}
@@ -152,20 +166,23 @@ export default function ReportLocationModal({
 
             {/* Use My Guess Option */}
             {guessLatitude && guessLongitude && (
-              <label className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 cursor-pointer hover:bg-amber-500/15 transition">
+              <label className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5 cursor-pointer hover:bg-emerald-500/15 transition">
                 <input
                   type="checkbox"
                   checked={suggestMyGuess}
                   onChange={(e) => setSuggestMyGuess(e.target.checked)}
-                  className="mt-0.5 rounded border-amber-500 text-amber-500 focus:ring-amber-500 h-4 w-4 bg-slate-900 cursor-pointer"
+                  className="mt-0.5 rounded border-emerald-500 text-emerald-500 focus:ring-emerald-500 h-4 w-4 bg-slate-900 cursor-pointer"
                 />
                 <div className="flex-1">
-                  <span className="font-bold text-amber-300 text-xs flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                    Suggest my pinned guess as the true location
+                  <span className="font-bold text-emerald-400 text-xs flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                    Lock in my pin as the correct location (instant update)
                   </span>
                   <p className="text-[11px] text-slate-400 mt-0.5">
                     Coordinates: <span className="font-mono text-slate-300">{guessLatitude.toFixed(6)}, {guessLongitude.toFixed(6)}</span>
+                  </p>
+                  <p className="text-[10px] text-emerald-400/80 mt-0.5">
+                    ⚡ This will immediately calibrate this spot so upcoming games use your pin!
                   </p>
                 </div>
               </label>
