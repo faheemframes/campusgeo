@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import { ArrowRight, Trophy, MapPin, Navigation } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowRight, Trophy, MapPin, Navigation, Flag } from 'lucide-react';
 import { formatDistance, getRoundScoreTier } from '@/lib/scoring';
+import ReportLocationModal from '@/components/ReportLocationModal';
 import type * as LType from 'leaflet';
 
 interface RoundResultModalProps {
@@ -10,6 +11,7 @@ interface RoundResultModalProps {
   totalRounds: number;
   score: number;
   distanceMeters: number;
+  locationId?: string;
   actualLatitude: number;
   actualLongitude: number;
   guessLatitude: number;
@@ -25,6 +27,7 @@ export default function RoundResultModal({
   totalRounds,
   score,
   distanceMeters,
+  locationId,
   actualLatitude,
   actualLongitude,
   guessLatitude,
@@ -36,6 +39,7 @@ export default function RoundResultModal({
 }: RoundResultModalProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<LType.Map | null>(null);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -253,8 +257,35 @@ export default function RoundResultModal({
             <span>{isGameOver ? 'SEE FINAL SCORE' : 'NEXT ROUND'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
+
+          {/* Report Incorrect Location Button */}
+          <div className="flex items-center justify-center pt-0.5">
+            <button
+              type="button"
+              onClick={() => setShowReport(true)}
+              aria-label="Report incorrect location coordinates or landmark name"
+              className="text-[11px] text-slate-400 hover:text-amber-400 flex items-center gap-1.5 transition py-1 px-2.5 rounded-lg hover:bg-white/[0.04] active:scale-95"
+            >
+              <Flag className="w-3 h-3 text-amber-400/80" />
+              <span>Think our pin was wrong? Help us fix it</span>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Report Modal */}
+      <ReportLocationModal
+        isOpen={showReport}
+        onClose={() => setShowReport(false)}
+        locationId={locationId || ''}
+        locationName={locationName}
+        actualLatitude={actualLatitude}
+        actualLongitude={actualLongitude}
+        guessLatitude={guessLatitude}
+        guessLongitude={guessLongitude}
+        distanceMeters={distanceMeters}
+        imageUrl={imageUrl}
+      />
     </div>
   );
 }

@@ -20,6 +20,7 @@ model Location {
   createdAt  DateTime @default(now())
 
   rounds     Round[]
+  reports    LocationReport[]
 }
 
 model Game {
@@ -47,3 +48,20 @@ model Round {
 
   @@unique([gameId, roundNumber])
 }
+
+model LocationReport {
+  id              String   @id @default(cuid())
+  locationId      String
+  locationName    String
+  actualLatitude  Float
+  actualLongitude Float
+  guessLatitude   Float?
+  guessLongitude  Float?
+  reason          String   @default("wrong_location")
+  note            String?
+  status          String   @default("pending")
+  createdAt       DateTime @default(now())
+
+  location        Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+}
+

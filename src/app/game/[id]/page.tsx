@@ -19,6 +19,7 @@ interface CompletedRound {
   roundNumber: number;
   score: number;
   distanceMeters: number;
+  locationId?: string;
   locationName: string;
   imageUrl?: string;
   actualLatitude: number;
@@ -131,6 +132,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
         roundNumber: data.roundNumber,
         score: data.score,
         distanceMeters: data.distanceMeters,
+        locationId: data.locationId,
         locationName: data.locationName,
         imageUrl: data.imageUrl || roundInfo?.imageUrl,
         actualLatitude: data.actualLatitude,
@@ -298,6 +300,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
           totalRounds={totalRounds}
           score={activeResult.score}
           distanceMeters={activeResult.distanceMeters}
+          locationId={activeResult.locationId}
           actualLatitude={activeResult.actualLatitude}
           actualLongitude={activeResult.actualLongitude}
           guessLatitude={activeResult.guessLatitude}

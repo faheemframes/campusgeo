@@ -20,7 +20,9 @@ import {
   Camera,
   Layers,
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  Flag,
+  Check
 } from 'lucide-react';
 
 interface LocationItem {
@@ -48,6 +50,28 @@ interface Metrics {
   difficultyCounts: Record<string, number>;
 }
 
+interface LocationReportItem {
+  id: string;
+  locationId: string;
+  locationName: string;
+  actualLatitude: number;
+  actualLongitude: number;
+  guessLatitude?: number | null;
+  guessLongitude?: number | null;
+  reason: string;
+  note?: string | null;
+  status: string;
+  createdAt: string;
+  location?: {
+    id: string;
+    name: string;
+    imageUrl?: string | null;
+    latitude: number;
+    longitude: number;
+    area: string;
+  };
+}
+
 function AdminContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -60,6 +84,11 @@ function AdminContent() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  // Error Reports Tab
+  const [currentTab, setCurrentTab] = useState<'spots' | 'reports'>('spots');
+  const [reports, setReports] = useState<LocationReportItem[]>([]);
+  const [isLoadingReports, setIsLoadingReports] = useState<boolean>(false);
+
 
   // Filters
   const [sourceFilter, setSourceFilter] = useState<'all' | 'user' | 'seeded'>('all');
@@ -110,11 +139,85 @@ function AdminContent() {
       setIsAuthenticated(true);
       setAdminKey(key);
       localStorage.setItem('campusgeo_admin_key', key);
+      fetchReports(key);
     } catch (err: any) {
       setAuthError(err.message || 'Authentication error');
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+
+  const fetchReports = async (key: string) => {
+    setIsLoadingReports(true);
+    try {
+      const res = await fetch('/api/report-location?key=' + encodeURIComponent(key), {
+        headers: { 'x-admin-key': key },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setReports(data.reports || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch reports:', err);
+    } finally {
+      setIsLoadingReports(false);
+    }
+  };
+
+  const handleApplyReport = async (rep: LocationReportItem) => {
+    if (!rep.guessLatitude || !rep.guessLongitude) {
+      alert('This report does not contain suggested coordinates to apply.');
+      return;
+    }
+    if (
+      !confirm(
+        
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/report-location?key=' + encodeURIComponent(adminKey), {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey,
+        },
+        body: JSON.stringify({
+          reportId: rep.id,
+          action: 'apply',
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to apply report');
+      alert('Location updated successfully!');
+      verifyAndFetch(adminKey);
+    } catch (err: any) {
+      alert(err.message || 'Error applying report');
+    }
+  };
+
+  const handleDismissReport = async (reportId: string) => {
+    try {
+      const res = await fetch('/api/report-location?key=' + encodeURIComponent(adminKey), {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey,
+        },
+        body: JSON.stringify({
+          reportId,
+          action: 'dismiss',
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to dismiss report');
+      fetchReports(adminKey);
+    } catch (err: any) {
+      alert(err.message || 'Error dismissing report');
     }
   };
 
@@ -423,6 +526,44 @@ function AdminContent() {
         </section>
       )}
 
+
+      {/* Tab Switcher */}
+      <div className="w-full max-w-7xl mx-auto flex items-center gap-3 mb-6">
+        <button
+          onClick={() => setCurrentTab('spots')}
+          className={
+            currentTab === 'spots'
+              ? 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition flex items-center gap-2 bg-amber-500 text-slate-950 shadow-md'
+              : 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition flex items-center gap-2 bg-slate-900/80 border border-white/[0.08] text-slate-400 hover:text-white'
+          }
+        >
+          <MapPin className="w-4 h-4" />
+          <span>Campus Spots ({locations.length})</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setCurrentTab('reports');
+            fetchReports(adminKey);
+          }}
+          className={
+            currentTab === 'reports'
+              ? 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition flex items-center gap-2 bg-amber-500 text-slate-950 shadow-md'
+              : 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition flex items-center gap-2 bg-slate-900/80 border border-white/[0.08] text-slate-400 hover:text-white'
+          }
+        >
+          <Flag className="w-4 h-4 text-amber-400" />
+          <span>Location Reports</span>
+          {reports.filter((r) => r.status === 'pending').length > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-mono font-bold">
+              {reports.filter((r) => r.status === 'pending').length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {currentTab === 'spots' ? (
+        <>
       {/* Filter and Search Bar */}
       <section className="w-full max-w-7xl mx-auto bg-slate-900/60 border border-white/[0.06] rounded-2xl p-3 sm:p-4 mb-6 flex flex-col gap-3">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
@@ -658,6 +799,146 @@ function AdminContent() {
           ))
         )}
       </section>
+        </>
+      ) : (
+        /* Reports Section */
+        <section className="w-full max-w-7xl mx-auto flex flex-col gap-4">
+          <div className="flex items-center justify-between bg-slate-900/60 border border-white/[0.06] rounded-2xl p-4">
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-white">
+                Player Location Reports & Coordinate Fix Suggestions
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Review reports submitted by players when they think a marker was off. You can apply their suggested coordinates in 1 click!
+              </p>
+            </div>
+            <button
+              onClick={() => fetchReports(adminKey)}
+              disabled={isLoadingReports}
+              className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-semibold text-slate-300 flex items-center gap-1.5 transition"
+            >
+              <RefreshCw className={'w-3.5 h-3.5 ' + (isLoadingReports ? 'animate-spin' : '')} />
+              <span>Refresh Reports</span>
+            </button>
+          </div>
+
+          {reports.length === 0 ? (
+            <div className="w-full py-16 bg-slate-900/40 border border-white/[0.06] rounded-3xl flex flex-col items-center justify-center text-center p-6">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3 text-emerald-400">
+                <Check className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-white">No Reports Yet!</h3>
+              <p className="text-xs text-slate-400 max-w-sm mt-1">
+                All locations are currently verified. Any future coordinate corrections reported by players will show up here.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {reports.map((rep) => (
+                <div
+                  key={rep.id}
+                  className="bg-slate-900/80 border border-white/[0.06] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-white/[0.12] transition"
+                >
+                  <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                    {rep.location?.imageUrl ? (
+                      <img
+                        src={rep.location.imageUrl}
+                        alt={rep.locationName}
+                        onClick={() =>
+                          setPreviewImage({
+                            url: rep.location?.imageUrl || '',
+                            name: rep.locationName,
+                          })
+                        }
+                        className="w-16 h-16 rounded-xl object-cover border border-slate-700 shrink-0 cursor-pointer hover:opacity-80 transition"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-xl bg-slate-800 flex items-center justify-center shrink-0">
+                        <MapPin className="w-6 h-6 text-slate-500" />
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold text-white">
+                          {rep.locationName}
+                        </span>
+                        <span
+                          className={
+                            rep.status === 'applied'
+                              ? 'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 border border-emerald-500/40 text-emerald-300'
+                              : rep.status === 'dismissed'
+                              ? 'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700'
+                              : 'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 border border-amber-500/40 text-amber-300'
+                          }
+                        >
+                          {rep.status}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          {new Date(rep.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <div className="mt-1 text-xs text-slate-300">
+                        <span className="text-slate-500">Issue:</span>{' '}
+                        <span className="font-semibold text-amber-300 capitalize">
+                          {rep.reason.replace('_', ' ')}
+                        </span>
+                        {rep.note && (
+                          <p className="mt-1 p-2 rounded-lg bg-slate-950/70 border border-white/[0.04] text-slate-300 text-xs italic">
+                            "{rep.note}"
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div className="p-1.5 rounded-lg bg-slate-950/60 border border-white/[0.04]">
+                          <span className="text-slate-500 block text-[9px] uppercase font-bold">
+                            Current Game Pin:
+                          </span>
+                          <span className="text-slate-300">
+                            {rep.actualLatitude.toFixed(6)}, {rep.actualLongitude.toFixed(6)}
+                          </span>
+                        </div>
+                        {rep.guessLatitude && rep.guessLongitude && (
+                          <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                            <span className="text-amber-400 block text-[9px] uppercase font-bold">
+                              Player's Suggested Pin:
+                            </span>
+                            <span className="text-amber-200 font-bold">
+                              {rep.guessLatitude.toFixed(6)}, {rep.guessLongitude.toFixed(6)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {rep.status === 'pending' && (
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      {rep.guessLatitude && rep.guessLongitude && (
+                        <button
+                          onClick={() => handleApplyReport(rep)}
+                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:brightness-110 text-slate-950 font-black text-xs uppercase tracking-wider transition active:scale-95 flex items-center gap-1.5 shadow-md"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Apply Fix</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDismissReport(rep.id)}
+                        className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition active:scale-95"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Image Preview Modal */}
       {previewImage && (

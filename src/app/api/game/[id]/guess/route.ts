@@ -89,6 +89,7 @@ export async function POST(
       roundNumber,
       score,
       distanceMeters,
+      locationId: round.location.id,
       actualLatitude: round.location.latitude,
       actualLongitude: round.location.longitude,
       locationName: round.location.name,
